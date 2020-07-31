@@ -115,10 +115,12 @@ if fromfits == True:
 		
 
 if testfitsfile == True:
-	myfitsfile = fitsfile
-	myoutvis = msfilename
+	#myfitsfile = fitsfile
+	#myoutvis = msfilename
 	default(importgmrt)
-	importgmrt(fitsfile=myfitsfile, vis = myoutvis)
+	importgmrt(fitsfile=fitsfile, vis = msfilename)
+	if os.path.isfile(msfilename+'.list') == True:
+		os.system('rm '+msfilename+'.list')
 	vislistobs(msfilename)
 	print("You have the following fields in your file:",getfields(msfilename))
 	logging.info("You have the following fields in your file",getfields(msfilename))
