@@ -96,6 +96,8 @@ if fromlta == True:
 		testgvfits = os.path.isfile(gvbinpath[1])
 		if testlistscan and testgvfits == True:
 			os.system(gvbinpath[0]+' '+ltafile)
+                        if fitsfile != 'TEST.FITS':
+                            os.system("sed -i 's/TEST.FITS/'"+fitsfile+"/ "+ltafile.split('.')[0]+'.log')
 			os.system(gvbinpath[1]+' '+ltafile.split('.')[0]+'.log')
     		else:	
 			logging.info("Error: Check if listscan and gvfits are present and executable.")
@@ -290,7 +292,7 @@ if testms == True:
 	if findbadants == True:
 		myantlist = antsused
 		mycmds = []
-		meancutoff = 0.4    # uncalibrated mean cutoff
+		meancutoff = 0.2    # uncalibrated mean cutoff
 		mycorr1='rr'
 		mycorr2='ll'
 		mygoodchans1=mygoodchans
