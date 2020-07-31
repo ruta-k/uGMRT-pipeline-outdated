@@ -8,10 +8,9 @@
 
 def vislistobs(msfile):
 	'''Writes the verbose output of the task listobs.'''
-	os.system('rm '+msfile+'.list')
 	ms.open(msfile)  
 	outr=ms.summary(verbose=True,listfile=msfile+'.list')
-	print "A file containing listobs output is saved."
+	print("A file containing listobs output is saved.")
 	return outr
 
 def getpols(msfile):
