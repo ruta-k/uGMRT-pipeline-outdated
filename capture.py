@@ -47,7 +47,7 @@ findbadants = config.getboolean('basic','findbadants')
 flagbadants= config.getboolean('basic','flagbadants')                      
 findbadchans = config.getboolean('basic','findbadchans')                         
 flagbadfreq= config.getboolean('basic','flagbadfreq')                           
-myflaginit = config.getboolean('basic','myflaginit')                             
+flaginit = config.getboolean('basic','flaginit')                             
 doinitcal = config.getboolean('basic','doinitcal')                              
 mydoflag = config.getboolean('basic','mydoflag')                              
 redocal = config.getboolean('basic','redocal')                              
@@ -64,7 +64,7 @@ fitsfile = config.get('basic','fitsfile')
 msfilename =config.get('basic','msfilename')
 splitfilename =config.get('basic','splitfilename')
 splitavgfilename = config.get('basic','splitavgfilename')
-quackinterval = config.getfloat('basic','quackinterval')
+setquackinterval = config.getfloat('basic','setquackinterval')
 ref_ant = config.get('basic','ref_ant')
 uvracal =config.get('basic','uvracal')
 clipfluxcal = [float(config.get('basic','clipfluxcal').split(',')[0]),float(config.get('basic','clipfluxcal').split(',')[1])]
@@ -377,7 +377,7 @@ if testms == True:
 
 ############ Initial flagging ################
 
-if myflaginit == True:
+if flaginit == True:
 	assert os.path.isdir(msfilename)
 	casalog.filter('INFO')
 #Step 1 : Flag the first channel.
@@ -387,10 +387,10 @@ if myflaginit == True:
 #Step 3: Do a quack step 
 	default(flagdata)
 	flagdata(vis=msfilename, mode='quack', field='', spw='0', antenna='', correlation='', timerange='',
-		quackinterval=quackinterval, quackmode='beg', action='apply', savepars=True, cmdreason='quackbeg',
+		quackinterval=setquackinterval, quackmode='beg', action='apply', savepars=True, cmdreason='quackbeg',
 	        outfile='flg3.dat')
 	default(flagdata)
-	flagdata(vis=msfilename, mode='quack', field='', spw='0', antenna='', correlation='', timerange='', quackinterval=quackinterval,
+	flagdata(vis=msfilename, mode='quack', field='', spw='0', antenna='', correlation='', timerange='', quackinterval=setquackinterval,
 		quackmode='endb', action='apply', savepars=True, cmdreason='quackendb', outfile='flg3.dat')
 # Clip at high amp levels
 	if myampcals !=[]:
