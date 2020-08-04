@@ -146,14 +146,12 @@ if testms == True:
         gmrtfreq = 0.0
 # check if single pol data
         mypol = getpols(msfilename)
-        print("Printing which polarization=",mypol)
+        print("Your file contain %s polarization products." % mypol)
 	logging.info('Your file contains %s polarization products.', mypol)
-#        print("Printing polarization types=",mypols(msfilename,mypol))
         if mypol == 1:
                 print("This dataset contains only single polarization data.")
                 logging.info('This dataset contains only single polarization data.')
                 mychnu = freq_info(msfilename)
-                print mychnu[0]
                 if 200E6< mychnu[0]<300E6:
                         poldata = 'LL'
                         gmrt235 = True
@@ -176,12 +174,12 @@ if testms == True:
                         gmrtfreq = mychnu[0]
                         print("You have data in a single polarization - most likely GMRT hardware correlator. This pipeline currently does not support reduction of single pol HW correlator data.")
                         logging.info('You have data in a single polarization - most likely GMRT hardware correlator. This pipeline currently does not support reduction of single pol HW correlator data.')
-                        print("The number of channels in this file are", mychnu[0])
+                        print("The number of channels in this file are %d" %  mychnu[0])
                         logging.info('The number of channels in this file are %d', mychnu[0])
 			sys.exit()
 ##################
 	mynchan = getnchan(msfilename)
-	logging.info('The number of channels in your file %d' % mynchan)
+	logging.info('The number of channels in your file %d',mynchan)
 	if mynchan == 1024:
 		mygoodchans = '0:250~300'   # used for visstat
 		flagspw = '0:51~950'
@@ -277,14 +275,14 @@ if testms == True:
 	for i in range(0,len(mytargets)):
 		tgtscans.extend(getscans(msfilename,mytargets[i]))
 #		tgtscans=tgtscans+(getscans(msfilename,mytargets[i]))
-	print ampcalscans
-	print pcalscans	
-	print tgtscans
+	print(ampcalscans)
+	print(pcalscans)	
+	print(tgtscans)
 	allscanlist= ampcalscans+pcalscans+tgtscans
 ###################################
 # get a list of antennas
 	antsused = getantlist(msfilename,int(allscanlist[0]))
-	print antsused
+	print(antsused)
 ###################################
 # find band ants
 	if flagbadants==True:
@@ -315,37 +313,29 @@ if testms == True:
                                 else:
                                         oneantmean1 = myvisstatampraw(msfilename,mygoodchans,myantlist[i],mycorr1,str(mycalscans[j]))
                                         oneantmean2 = myvisstatampraw(msfilename,mygoodchans,myantlist[i],mycorr2,str(mycalscans[j]))
-#				oneantmean1 = myvisstatampraw(msfilename,mygoodchans,myantlist[i],mycorr1,str(mycalscans[j]))
-#				oneantmean2 = myvisstatampraw(msfilename,mygoodchans,myantlist[i],mycorr2,str(mycalscans[j]))
 				oneantmean = min(oneantmean1,oneantmean2)
 				myantmeans.append(oneantmean)
-#				print myantlist[i], oneantmean1, oneantmean2
 				if oneantmean < meancutoff:
 					badantlist.append(myantlist[i])
 					allbadants.append(myantlist[i])
-#			print("The following antennas are bad for the given scan numbers.")
 			logging.info("The following antennas are bad for the given scan numbers.")
-#			print(badantlist, str(mycalscans[j]))
 			logging.info('%s, %s',str(badantlist), str(mycalscans[j]))
 			if badantlist!=[]:
 				myflgcmd = "mode='manual' antenna='%s' scan='%s'" % (str('; '.join(badantlist)), str(mycalscans[j]))
 				mycmds.append(myflgcmd)
-				print(myflgcmd)
 				logging.info(myflgcmd)
 				onelessscan = mycalscans[j] - 1
 				onemorescan = mycalscans[j] + 1
 				if onelessscan in tgtscans:
 					myflgcmd = "mode='manual' antenna='%s' scan='%s'" % (str('; '.join(badantlist)), str(mycalscans[j]-1))
 					mycmds.append(myflgcmd)
-					print(myflgcmd)
 					logging.info(myflgcmd)
 				if onemorescan in tgtscans:
 					myflgcmd = "mode='manual' antenna='%s' scan='%s'" % (str('; '.join(badantlist)), str(mycalscans[j]+1))
 					mycmds.append(myflgcmd)
-					print(myflgcmd)
 					logging.info(myflgcmd)
 # execute the flagging commands accumulated in cmds
-		print mycmds
+		print(mycmds)
 		if flagbadants==True:
 			print("Now flagging the bad antennas.")
 			logging.info("Now flagging the bad antennas.")
@@ -359,24 +349,18 @@ if testms == True:
 		myfreqs =  freq_info(msfilename)
 		mybadchans=[]
 		for j in range(0,len(rfifreqall)-1,2):
-#			print rfifreqall[j]
 			for i in range(0,len(myfreqs)):
 				if (myfreqs[i] > rfifreqall[j] and myfreqs[i] < rfifreqall[j+1]): #(myfreqs[i] > 0.486E09 and myfreqs[i] < 0.49355E09):
 					mybadchans.append('0:'+str(i))
 		mychanflag = str(', '.join(mybadchans))
-#		print mychanflag
 		if mybadchans!=[]:
-#			print mychanflag
 			myflgcmd = ["mode='manual' spw='%s'" % (mychanflag)]
 			if flagbadfreq==True:
 				default(flagdata)
 				flagdata(vis=msfilename,mode='list', inpfile=myflgcmd)
 		else:
-#			print("No bad frequencies found in the range.")
 			logging.info("No bad frequencies found in the range.")
-
 ############ Initial flagging ################
-
 if flaginit == True:
 	assert os.path.isdir(msfilename)
 	casalog.filter('INFO')
@@ -429,42 +413,28 @@ if flaginit == True:
 		flagdata(vis=msfilename,mode="summary",datacolumn="DATA", extendflags=True, 
 	        	 name=vis+'summary.split', action="apply", flagbackup=True,overwrite=True, writeflags=True)	
 #####################################################################
-#if doinitcal==True:
-#	print "After initial flagging:"
-#	myflagtabs = flagmanager(vis = msfilename, mode ='list')
-#	print 'myflagtabs=',myflagtabs
-
 # Calibration begins.
 if doinitcal == True:
 	assert os.path.isdir(msfilename)
 	mycalsuffix = ''
 	casalog.filter('INFO')
-#	print "Summary of flagtables before initial calibration:"
-#	myflagtabs = flagmanager(vis = msfilename, mode ='list')
-#	print 'myflagtabs=',myflagtabs
 	clearcal(vis=msfilename)
-#delmod step to keep model column free of spurious values
 	for i in range(0,len(myampcals)):
-#		delmod(vis=msfilename)	
 		default(setjy)
 		setjy(vis=msfilename, spw=flagspw, field=myampcals[i])
-		print "Done setjy on %s"%(myampcals[i])
+#		print("Done setjy on %s"% myampcals[i])
 # Delay calibration  using the first flux calibrator in the list - should depend on which is less flagged
 	if os.path.isdir(str(msfilename)+'.K1'+mycalsuffix) == True:
 		os.system('rm -rf '+str(msfilename)+'.K1'+mycalsuffix)
 	gaincal(vis=msfilename, caltable=str(msfilename)+'.K1'+mycalsuffix, spw =flagspw, field=myampcals[0], 
 		solint='60s', refant=ref_ant,	solnorm= True, gaintype='K', gaintable=[], parang=True)
 	kcorrfield =myampcals[0]
-#	print 'wrote table',str(msfilename)+'.K1'
 # an initial bandpass
 	if os.path.isdir(str(msfilename)+'.AP.G0'+mycalsuffix) == True:
 		os.system('rm -rf '+str(msfilename)+'.AP.G0'+mycalsuffix)
 	default(gaincal)
-#	gaincal(vis=msfilename, caltable=str(msfilename)+'.AP.G0', append=True, field=str(','.join(mybpcals)), 
-#		spw =flagspw, solint = 'int', refant = ref_ant, minsnr = 2.0, solmode ='L1R', gaintype = 'G', calmode = 'ap', gaintable = [str(msfilename)+'.K1'],
-#		interp = ['nearest,nearestflag', 'nearest,nearestflag' ], parang = True)
 	gaincal(vis=msfilename, caltable=str(msfilename)+'.AP.G0'+mycalsuffix, append=True, field=str(','.join(mybpcals)), 
-		spw =flagspw, solint = 'int', refant = ref_ant, minsnr = 2.0, gaintype = 'G', calmode = 'ap', gaintable = [str(msfilename)+'.K1'+mycalsuffix],
+		spw =flagspw, solint = 'int', refant = ref_ant, minsnr = 2.0, solmode = 'L1R', gaintype = 'G', calmode = 'ap', gaintable = [str(msfilename)+'.K1'+mycalsuffix],
 		interp = ['nearest,nearestflag', 'nearest,nearestflag' ], parang = True)
 	if os.path.isdir(str(msfilename)+'.B1'+mycalsuffix) == True:
 		os.system('rm -rf '+str(msfilename)+'.B1'+mycalsuffix)
@@ -492,7 +462,6 @@ if doinitcal == True:
 		else:
 			myfluxscale= getfluxcal2(msfilename,myampcals[0],str(', '.join(mypcals)),mycalsuffix)
 			myfluxscaleref = myampcals[0]
-#		print(myfluxscale)
 		logging.info(myfluxscale)
 		mygaintables =[str(msfilename)+'.fluxscale'+mycalsuffix,str(msfilename)+'.K1'+mycalsuffix, str(msfilename)+'.B1'+mycalsuffix]
 	else:
@@ -517,24 +486,11 @@ if doinitcal == True:
 			default(applycal)
 			applycal(vis=msfilename, field=str(', '.join(mytargets)), spw = flagspw, gaintable=mygaintables,
 		        	 gainfield=[str(', '.join(myampcals)),'',''],interp=['linear','','nearest'], calwt=[False], parang=False)	
-#	print("Finished initial calibration.")
 	logging.info("Finished initial calibration.")
-#	print "Summary of flagtables after initial calibration:"
-#	myflagtabs = flagmanager(vis = msfilename, mode ='list')
-#	print 'myflagtabs=',myflagtabs
-
 #############################################################################3
-
-# Do tfcrop on the file first - only for the target
-# No need for antenna selection
-
-
-
-
 #######Ishwar post calibration flagging
 if mydoflag == True:
 	assert os.path.isdir(msfilename)
-#	print("You have chosen to flag after the initial calibration.")
 	logging.info("You have chosen to flag after the initial calibration.")
 	default(flagdata)
 	if myampcals !=[]:
@@ -595,20 +551,13 @@ if mydoflag == True:
 # Calibration begins.
 if redocal == True:
 	assert os.path.isdir(msfilename)
-#	print("You have chosen to redo the calibration on your data.")
 	logging.info("You have chosen to redo the calibration on your data.")
 	mycalsuffix = 'recal'
 	casalog.filter('INFO')
-#	print "Summary of flagtables before calibration:"
-#	myflagtabs = flagmanager(vis = msfilename, mode ='list')
-#	print 'myflagtabs=',myflagtabs
 	clearcal(vis=msfilename)
-#delmod step to keep model column free of spurious values
 	for i in range(0,len(myampcals)):
-#		delmod(vis=msfilename)	
 		default(setjy)
 		setjy(vis=msfilename, spw=flagspw, field=myampcals[i])
-#		print("Done setjy on %s"%(myampcals[i]))
 		logging.info("Done setjy on %s"%(myampcals[i]))
 # Delay calibration  using the first flux calibrator in the list - should depend on which is less flagged
 	if os.path.isdir(str(msfilename)+'.K1'+mycalsuffix) == True:
@@ -621,18 +570,15 @@ if redocal == True:
 	if os.path.isdir(str(msfilename)+'.AP.G0'+mycalsuffix) == True:
 		os.system('rm -rf '+str(msfilename)+'.AP.G0'+mycalsuffix)
 	default(gaincal)
-#	gaincal(vis=msfilename, caltable=str(msfilename)+'.AP.G0', append=True, field=str(','.join(mybpcals)), 
-#		spw =flagspw, solint = 'int', refant = ref_ant, minsnr = 2.0, solmode ='L1R', gaintype = 'G', calmode = 'ap', gaintable = [str(msfilename)+'.K1'],
-#		interp = ['nearest,nearestflag', 'nearest,nearestflag' ], parang = True)
 	gaincal(vis=msfilename, caltable=str(msfilename)+'.AP.G0'+mycalsuffix, append=True, field=str(','.join(mybpcals)), 
-		spw =flagspw, solint = 'int', refant = ref_ant, minsnr = 2.0, gaintype = 'G', calmode = 'ap', gaintable = [str(msfilename)+'.K1'],
+		spw =flagspw, solint = 'int', refant = ref_ant, minsnr = 2.0, solmode ='L1R', gaintype = 'G', calmode = 'ap', gaintable = [str(msfilename)+'.K1'],
 		interp = ['nearest,nearestflag', 'nearest,nearestflag' ], parang = True)
 	if os.path.isdir(str(msfilename)+'.B1'+mycalsuffix) == True:
 		os.system('rm -rf '+str(msfilename)+'.B1'+mycalsuffix)
 	default(bandpass)
 	bandpass(vis=msfilename, caltable=str(msfilename)+'.B1'+mycalsuffix, spw =flagspw, field=str(','.join(mybpcals)), solint='inf', refant=ref_ant, solnorm = True,
 		minsnr=2.0, fillgaps=8, parang = True, gaintable=[str(msfilename)+'.K1'+mycalsuffix,str(msfilename)+'.AP.G0'+mycalsuffix], interp=['nearest,nearestflag','nearest,nearestflag'])
-# do a gaingal on alll calibrators
+# do a gaingal on all calibrators
 	mycals=myampcals+mypcals
 	i=0
 	if os.path.isdir(str(msfilename)+'.AP.G'+mycalsuffix) == True:
@@ -640,24 +586,19 @@ if redocal == True:
 	for i in range(0,len(mycals)):
 		mygaincal_ap2(msfilename,mycals[i],ref_ant,gainspw,uvracal,mycalsuffix)
 # Get flux scale
-#if doinitcal == True:	
 	if os.path.isdir(str(msfilename)+'.fluxscale'+mycalsuffix) == True:
 		os.system('rm -rf '+str(msfilename)+'.fluxscale'+mycalsuffix)
 ########################################
 	if mypcals !=[]:
 		if '3C286' in myampcals:
-#			myfluxscale= getfluxcal(msfilename,'3C286',str(', '.join(mypcals)))
 			myfluxscale= getfluxcal2(msfilename,'3C286',str(', '.join(mypcals)),mycalsuffix)
 			myfluxscaleref = '3C286'
 		elif '3C147' in myampcals:
-#			myfluxscale= getfluxcal(msfilename,'3C147',str(', '.join(mypcals)))
 			myfluxscale= getfluxcal2(msfilename,'3C147',str(', '.join(mypcals)),mycalsuffix)
 			myfluxscaleref = '3C147'
 		else:
-#			myfluxscale= getfluxcal(msfilename,myampcals[0],str(', '.join(mypcals)))
 			myfluxscale= getfluxcal2(msfilename,myampcals[0],str(', '.join(mypcals)),mycalsuffix)
 			myfluxscaleref = myampcals[0]
-#		print(myfluxscale)
 		logging.info(myfluxscale)
 		mygaintables =[str(msfilename)+'.fluxscale'+mycalsuffix,str(msfilename)+'.K1'+mycalsuffix, str(msfilename)+'.B1'+mycalsuffix]
 	else:
@@ -682,19 +623,12 @@ if redocal == True:
 			default(applycal)
 			applycal(vis=msfilename, field=str(', '.join(mytargets)), spw = flagspw, gaintable=mygaintables,
 		        	 gainfield=[str(', '.join(myampcals)),'',''],interp=['linear','','nearest'], calwt=[False], parang=False)			
-#	print("Finished re-calibration.")
 	logging.info("Finished re-calibration.")
-#	print "Summary of flagtables after initial calibration:"
-#	myflagtabs = flagmanager(vis = msfilename, mode ='list')
-#	print 'myflagtabs=',myflagtabs
-
-###############################################################
 #############################################################
 # SPLIT step
 #############################################################
 if dosplit == True:
 	assert os.path.isdir(msfilename)
-#	print("The data on targets will be split into separate files.")
 	logging.info("The data on targets will be split into separate files.")
 	casalog.filter('INFO')
 # fix targets
@@ -714,16 +648,14 @@ if dosplit == True:
 	for i in range(0,len(mytargets)):
 		if os.path.isdir(mytargets[i]+'split.ms') == True:
 			os.system('rm -rf '+mytargets[i]+'split.ms')
-		print("The following spw is split for the target source:", gainspw)
+                logging.info("The following spw is split for the target source:", gainspw)
 		splitfilename = mysplitinit(msfilename,mytargets[i],gainspw,1)
-
 #############################################################
 # Flagging on split file
 #############################################################
 
 if flagsplitfile == True:
 	assert os.path.isdir(splitfilename)
-	print("You have chosen to flag on the split file.")
 	myantselect =''
 	mytfcrop(splitfilename,'',myantselect,8.0,8.0,'DATA','')
 	a, b = getbllists(splitfilename)
@@ -734,13 +666,11 @@ if flagsplitfile == True:
 	fdev = 5.0
 	myrflag(splitfilename,'',b[0],tdev,fdev,'DATA','')
 	
-
 #############################################################
 # SPLIT AVERAGE
 #############################################################
 if dosplitavg == True:
 	assert os.path.isdir(splitfilename)
-#	print("Your data will be averaged in frequency.")
 	logging.info("Your data will be averaged in frequency.")
 	if os.path.isdir(mytargets[i]+'avg-split.ms') == True:
 		os.system('rm -rf '+mytargets[i]+'avg-split.ms')
@@ -749,7 +679,6 @@ if dosplitavg == True:
 
 if doflagavg == True:
 	assert os.path.isdir(splitavgfilename)
-#	print("Flagging on frequency averaged data.")
 	logging.info("Flagging on freqeuncy averaged data.")
 	a, b = getbllists(splitavgfilename)
 	myrflagavg(splitavgfilename,'',b[0],6.0,6.0,'DATA','')

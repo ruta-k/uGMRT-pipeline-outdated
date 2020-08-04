@@ -169,7 +169,7 @@ def getbllists(myfile):
 	myallscans =[]
 	for i in range(0,len(myfields)):
 		myallscans.extend(getscans(myfile, myfields[i]))
-	myantlist = getantlist(myfile1,int(myallscans[0]))
+	myantlist = getantlist(myfile,int(myallscans[0]))
 	allbl=[]
 	for i in range(0,len(myantlist)):
 		for j in range(0,len(myantlist)):
