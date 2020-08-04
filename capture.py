@@ -22,18 +22,18 @@
 import logging
 import os
 from datetime import datetime
-logfile_name = datetime.now().strftime('capture_%H_%M_%d_%m_%Y.log')
+logfile_name = datetime.now().strftime('capture_%H_%M_%S_%d_%m_%Y.log')
 logging.basicConfig(filename=logfile_name,level=logging.DEBUG)
 console = logging.StreamHandler()
 console.setLevel(logging.INFO)
 logging.getLogger('').addHandler(console)
 
-print("LOGFILE =", logfile_name)
 logging.info("#######################################################################################")
 logging.info("You are using CAPTURE: CAsa Pipeline-cum-Toolkit for Upgraded GMRT data REduction.")
 logging.info("This has been developed at NCRA by Ruta Kale and Ishwara Chandra.")
 logging.info("#######################################################################################")
 
+print("LOGFILE = %s" % logfile_name)
 
 import ConfigParser
 config = ConfigParser.ConfigParser()
@@ -60,7 +60,7 @@ doselfcal = config.getboolean('basic','doselfcal')
 usetclean = config.getboolean('basic','usetclean')                        
 ltafile =config.get('basic','ltafile')
 gvbinpath = config.get('basic', 'gvbinpath').split(',')
-fitsfile = config.get('basic','fitsfile')
+fits_file = config.get('basic','fits_file')
 msfilename =config.get('basic','msfilename')
 splitfilename =config.get('basic','splitfilename')
 splitavgfilename = config.get('basic','splitavgfilename')
@@ -96,8 +96,8 @@ if fromlta == True:
 		testgvfits = os.path.isfile(gvbinpath[1])
 		if testlistscan and testgvfits == True:
 			os.system(gvbinpath[0]+' '+ltafile)
-                        if fitsfile != 'TEST.FITS':
-                            os.system("sed -i 's/TEST.FITS/'"+fitsfile+"/ "+ltafile.split('.')[0]+'.log')
+                        if fits_file != 'TEST.FITS':
+                            os.system("sed -i 's/TEST.FITS/'"+fits_file+"/ "+ltafile.split('.')[0]+'.log')
 			os.system(gvbinpath[1]+' '+ltafile.split('.')[0]+'.log')
     		else:	
 			logging.info("Error: Check if listscan and gvfits are present and executable.")
@@ -110,25 +110,24 @@ if fromlta == True:
 testfitsfile = False 
 
 if fromfits == True:
-	testfitsfile = os.path.isfile(fitsfile)
+	testfitsfile = os.path.isfile(fits_file)
 	if testfitsfile == False:
 		logging.info("The FITS file does not exist. Exiting the code...")
 		sys.exit()
 		
 
 if testfitsfile == True:
-	#myfitsfile = fitsfile
-	#myoutvis = msfilename
+        try:
+                assert os.path.isdir(msfilename), "The given msfile already exists, will not create new."
+        except AssertionError:
+                logging.info("The given msfile already exists, will not create new.")
 	default(importgmrt)
-	importgmrt(fitsfile=fitsfile, vis = msfilename)
+	importgmrt(fitsfile=fits_file, vis = msfilename)
 	if os.path.isfile(msfilename+'.list') == True:
 		os.system('rm '+msfilename+'.list')
 	vislistobs(msfilename)
-	print("You have the following fields in your file:",getfields(msfilename))
-	logging.info("You have the following fields in your file",getfields(msfilename))
+        logging.info("Please see the text file with the extension .list to find out more about your data.")
 	
-
-
 
 testms = False
 
@@ -136,7 +135,6 @@ if frommultisrcms == True:
 	testms = os.path.isdir(msfilename)
 	if testms == False:
 		logging.info("The MS file does not exist. Exiting the code...")
-#                logging.info("If you are starting from a split or splitavg file, please set frommultisrcms to False and reriun.")
                 sys.exit()
 
 
@@ -259,22 +257,15 @@ if testms == True:
 #	print("Target sources are", mytargets)
 	logging.info('Target sources are %s', str(mytargets))
 # need a condition to see if the pcal is same as 
-#if frommultisrcms==True:
 	ampcalscans =[]
-#	ampcalscans=0
 	for i in range(0,len(myampcals)):
 		ampcalscans.extend(getscans(msfilename, myampcals[i]))
-#		ampcalscans=ampcalscans+ getscans(msfilename, myampcals[i])
 	pcalscans=[]
-#	pcalscans=0
 	for i in range(0,len(mypcals)):
 		pcalscans.extend(getscans(msfilename, mypcals[i]))
-#		pcalscans=pcalscans+getscans(msfilename, mypcals[i])
 	tgtscans=[]
-#	tgtscans=0
 	for i in range(0,len(mytargets)):
 		tgtscans.extend(getscans(msfilename,mytargets[i]))
-#		tgtscans=tgtscans+(getscans(msfilename,mytargets[i]))
 	print(ampcalscans)
 	print(pcalscans)	
 	print(tgtscans)
@@ -297,7 +288,6 @@ if testms == True:
 		mycalscans = ampcalscans+pcalscans
 		print(mycalscans)
 		logging.info(mycalscans)
-#		myscan1 = pcalscans
 		allbadants=[]
 		for j in range(0,len(mycalscans)):
 			myantmeans = []
@@ -335,9 +325,7 @@ if testms == True:
 					mycmds.append(myflgcmd)
 					logging.info(myflgcmd)
 # execute the flagging commands accumulated in cmds
-		print(mycmds)
 		if flagbadants==True:
-			print("Now flagging the bad antennas.")
 			logging.info("Now flagging the bad antennas.")
 			default(flagdata)
 			flagdata(vis=msfilename,mode='list', inpfile=mycmds)	
@@ -362,7 +350,11 @@ if testms == True:
 			logging.info("No bad frequencies found in the range.")
 ############ Initial flagging ################
 if flaginit == True:
-	assert os.path.isdir(msfilename)
+        try:
+                assert os.path.isdir(msfilename), "flaginit = True but ms file not found."
+        except AssertionError:
+                logging.info("flaginit = True but ms file not found.")
+                sys.exit()
 	casalog.filter('INFO')
 #Step 1 : Flag the first channel.
 	default(flagdata)
@@ -416,6 +408,11 @@ if flaginit == True:
 # Calibration begins.
 if doinitcal == True:
 	assert os.path.isdir(msfilename)
+        try:
+                assert os.path.isdir(msfilename), "doinitcal = True but ms file not found."
+        except AssertionError:
+                logging.info("doinitcal = True but ms file not found.")
+                sys.exit()
 	mycalsuffix = ''
 	casalog.filter('INFO')
 	clearcal(vis=msfilename)
@@ -489,8 +486,13 @@ if doinitcal == True:
 	logging.info("Finished initial calibration.")
 #############################################################################3
 #######Ishwar post calibration flagging
-if mydoflag == True:
-	assert os.path.isdir(msfilename)
+if doflag == True:
+#	assert os.path.isdir(msfilename), "doflag = True but ms file not found."
+        try:
+                assert os.path.isdir(msfilename), "doflag = True but ms file not found."
+        except AssertionError:
+                logging.info("doflag = True but ms file not found.")
+                sys.exit()
 	logging.info("You have chosen to flag after the initial calibration.")
 	default(flagdata)
 	if myampcals !=[]:
@@ -550,7 +552,12 @@ if mydoflag == True:
 #################### new redocal #########################3
 # Calibration begins.
 if redocal == True:
-	assert os.path.isdir(msfilename)
+#	assert os.path.isdir(msfilename), "redocal = True but ms file not found."
+        try:
+                assert os.path.isdir(msfilename), "redocal = True but ms file not found."
+        except AssertionError:
+                logging.info("redocal = True but ms file not found.")
+                sys.exit()
 	logging.info("You have chosen to redo the calibration on your data.")
 	mycalsuffix = 'recal'
 	casalog.filter('INFO')
@@ -628,7 +635,12 @@ if redocal == True:
 # SPLIT step
 #############################################################
 if dosplit == True:
-	assert os.path.isdir(msfilename)
+#	assert os.path.isdir(msfilename), "dosplit = True but ms file not found."
+        try:
+                assert os.path.isdir(msfilename), "dosplit = True but ms file not found."
+        except AssertionError:
+                logging.info("dosplit = True but ms file not found.")
+                sys.exit()
 	logging.info("The data on targets will be split into separate files.")
 	casalog.filter('INFO')
 # fix targets
@@ -655,7 +667,12 @@ if dosplit == True:
 #############################################################
 
 if flagsplitfile == True:
-	assert os.path.isdir(splitfilename)
+#	assert os.path.isdir(splitfilename), "flagsplitfile = True but the split file not found."
+        try:
+                assert os.path.isdir(splitfilename), "flagsplitfile = True but the split file not found."
+        except AssertionError:
+                logging.info("flagsplitfile = True but the split file not found.")
+                sys.exit()
 	myantselect =''
 	mytfcrop(splitfilename,'',myantselect,8.0,8.0,'DATA','')
 	a, b = getbllists(splitfilename)
@@ -670,7 +687,12 @@ if flagsplitfile == True:
 # SPLIT AVERAGE
 #############################################################
 if dosplitavg == True:
-	assert os.path.isdir(splitfilename)
+#	assert os.path.isdir(splitfilename)
+        try:
+                assert os.path.isdir(splitfilename), "dosplitavg = True but the split file not found."
+        except AssertionError:
+                logging.info("dosplitavg = True but the split file not found.")
+                sys.exit()
 	logging.info("Your data will be averaged in frequency.")
 	if os.path.isdir(mytargets[i]+'avg-split.ms') == True:
 		os.system('rm -rf '+mytargets[i]+'avg-split.ms')
@@ -678,7 +700,12 @@ if dosplitavg == True:
 
 
 if doflagavg == True:
-	assert os.path.isdir(splitavgfilename)
+#	assert os.path.isdir(splitavgfilename)
+        try:
+                assert os.path.isdir(splitavgfilename), "doflagavg = True but the splitavg file not found."
+        except AssertionError:
+                logging.info("doflagavg = True but the splitavg file not found.")
+                sys.exit()
 	logging.info("Flagging on freqeuncy averaged data.")
 	a, b = getbllists(splitavgfilename)
 	myrflagavg(splitavgfilename,'',b[0],6.0,6.0,'DATA','')
@@ -688,14 +715,24 @@ if doflagavg == True:
 ############################################################
 
 if makedirty == True:
-	assert os.path.isdir(splitavgfilename)
+#	assert os.path.isdir(splitavgfilename)
+        try:
+                assert os.path.isdir(splitavgfilename), "makedirty = True but the splitavg file not found."
+        except AssertionError:
+                logging.info("makedirty = True but the splitavg file not found.")
+                sys.exit()
 	myfile2 = [splitavgfilename]
 	usetclean = True
 	if usetclean == True:
 		myselfcal(myfile2,ref_ant,scaloops,mypcaloops,mJythreshold,imcellsize,imsize_pix,use_nterms,nwprojpl,scalsolints,clipresid,'','',makedirty,niter_start)
 
 if doselfcal == True:
- 	assert os.path.isdir(splitavgfilename)
+# 	assert os.path.isdir(splitavgfilename)
+        try:
+                assert os.path.isdir(splitavgfilename), "doselfcal = True but the splitavg file not found."
+        except AssertionError:
+                logging.info("doselfcal = True but the splitavg file not found.")
+                sys.exit()
 	casalog.filter('INFO')
 	clearcal(vis = splitavgfilename)
 	myfile2 = [splitavgfilename]
