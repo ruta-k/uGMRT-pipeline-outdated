@@ -120,10 +120,13 @@ if fromfits == True:
 		
 
 if testfitsfile == True:
-        try:
-                assert os.path.isdir(msfilename), "The given msfile already exists, will not create new."
-        except AssertionError:
-                logging.info("The given msfile already exists, will not create new.")
+        if msfilename != '':
+                try:
+                        assert os.path.isdir(msfilename), "The given msfile already exists, will not create new."
+                except AssertionError:
+                        logging.info("The given msfile already exists, will not create new.")
+        else:
+                msfilename = fits_file+'.MS'
 	default(importgmrt)
 	importgmrt(fitsfile=fits_file, vis = msfilename)
 	if os.path.isfile(msfilename+'.list') == True:
