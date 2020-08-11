@@ -286,15 +286,15 @@ if flaginit == True:
 #Step 1 : Flag the first channel.
 	default(flagdata)
 	flagdata(vis=msfilename, mode='manual', field='', spw='0:0', antenna='', correlation='', action='apply', savepars=True,
-		cmdreason='badchan', outfile='flg1.dat')
+		cmdreason='badchan', outfile='')
 #Step 3: Do a quack step 
 	default(flagdata)
 	flagdata(vis=msfilename, mode='quack', field='', spw='0', antenna='', correlation='', timerange='',
 		quackinterval=setquackinterval, quackmode='beg', action='apply', savepars=True, cmdreason='quackbeg',
-	        outfile='flg3.dat')
+	        outfile='')
 	default(flagdata)
 	flagdata(vis=msfilename, mode='quack', field='', spw='0', antenna='', correlation='', timerange='', quackinterval=setquackinterval,
-		quackmode='endb', action='apply', savepars=True, cmdreason='quackendb', outfile='flg3.dat')
+		quackmode='endb', action='apply', savepars=True, cmdreason='quackendb', outfile='')
 # Clip at high amp levels
 	if myampcals !=[]:
 		default(flagdata)
