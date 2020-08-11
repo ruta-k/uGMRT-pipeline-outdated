@@ -76,13 +76,13 @@ imcellsize = [config.get('basic','imcellsize')]
 imsize_pix = int(config.get('basic','imsize_pix'))
 scaloops = config.getint('basic','scaloops')
 mJythreshold = float(config.get('basic','mJythreshold'))
-mypcaloops = config.getint('basic','mypcaloops')
+pcaloops = config.getint('basic','pcaloops')
 scalsolints = config.get('basic','scalsolints').split(',')
 niter_start = int(config.get('basic','niter_start'))
 use_nterms = config.getint('basic','use_nterms')
 nwprojpl = config.getint('basic','nwprojpl')
-uvrascal=config.get('basic','uvrascal')
-target = config.getboolean('basic','target')
+uvrascal=config.get('default','uvrascal')
+target = config.getboolean('default','target')
 
 execfile('ugpipe.py')
 
@@ -139,98 +139,11 @@ if frommultisrcms == True:
 
 
 if testms == True:
-        gmrt235 = False
-        gmrt610 = False
-        gmrtfreq = 0.0
-# check if single pol data
-        mypol = getpols(msfilename)
-        print("Your file contain %s polarization products." % mypol)
-	logging.info('Your file contains %s polarization products.', mypol)
-        if mypol == 1:
-                print("This dataset contains only single polarization data.")
-                logging.info('This dataset contains only single polarization data.')
-                mychnu = freq_info(msfilename)
-                if 200E6< mychnu[0]<300E6:
-                        poldata = 'LL'
-                        gmrt235 = True
-                        gmrt610 = False
-			mynchan = getnchan(msfilename)
-			if mynchan !=256:
-	                        print("You have data in the 235 MHz band of dual frequency mode of the GMRT. Currently files only with 256 channels are supported in this pipeline.")
-	                        logging.info('You have data in the 235 MHz band of dual frequency mode of the GMRT. Currently files only with 256 channels are supported in this pipeline.')
-				sys.exit()
-                elif 590E6<mychnu[0]<700E6:
-                        poldata = 'RR'
-                        gmrt235 = False
-                        gmrt610 = True
-			mynchan = getnchan(msfilename)
-			if mynchan != 256:
-                        	print("You have data in the 610 MHz band of the dual frequency mode of the legacy GMRT. Currently files only with 256 channels are supported in this pipeline.")
-                        	logging.info('You have data in the 610 MHz band of the dual frequency mode of the legacy GMRT. Currently files only with 256 channels are supported in this pipeline.')
-				sys.exit()
-                else:
-                        gmrtfreq = mychnu[0]
-                        print("You have data in a single polarization - most likely GMRT hardware correlator. This pipeline currently does not support reduction of single pol HW correlator data.")
-                        logging.info('You have data in a single polarization - most likely GMRT hardware correlator. This pipeline currently does not support reduction of single pol HW correlator data.')
-                        print("The number of channels in this file are %d" %  mychnu[0])
-                        logging.info('The number of channels in this file are %d', mychnu[0])
-			sys.exit()
-##################
-	mynchan = getnchan(msfilename)
-	logging.info('The number of channels in your file %d',mynchan)
-	if mynchan == 1024:
-		mygoodchans = '0:250~300'   # used for visstat
-		flagspw = '0:51~950'
-		gainspw = '0:101~900'
-		gainspw2 = ''   # central good channels after split file for self-cal	
-	elif mynchan == 2048:
-		mygoodchans = '0:500~600'   # used for visstat
-		flagspw = '0:101~1900'
-		gainspw = '0:201~1800'
-		gainspw2 = ''   # central good channels after split file for self-cal
-	elif mynchan == 4096:
-		mygoodchans = '0:1000~1200'
-		flagspw = '0:41~4050'
-		gainspw = '0:201~3600'
-		gainspw2 = ''   # central good channels after split file for self-cal
-	elif mynchan == 8192:
-		mygoodchans = '0:2000~3000'
-		flagspw = '0:500~7800'
-		gainspw = '0:1000~7000'
-		gainspw2 = ''   # central good channels after split file for self-cal
-	elif mynchan == 16384:
-		mygoodchans = '0:4000~6000'
-		flagspw = '0:1000~14500'
-		gainspw = '0:2000~13500'
-		gainspw2 = ''   # central good channels after split file for self-cal
-	elif mynchan == 128:
-		mygoodchans = '0:50~70'
-		flagspw = '0:5~115'
-		gainspw = '0:11~115'
-		gainspw2 = ''   # central good channels after split file for self-cal
-	elif mynchan == 256:
-#               if poldata == 'LL':
-                if gmrt235 == True:
-                        mygoodchans = '0:150~160'
-                        flagspw = '0:70~220'
-                        gainspw = '0:91~190'
-                        gainspw2 = ''   # central good channels after split file for self-cal
-                elif gmrt610 == True:
-                        mygoodchans = '0:100~120'
-                        flagspw = '0:11~240'
-                        gainspw = '0:21~230'
-                        gainspw2 = ''   # central good channels after split file for self-cal   
-                else:
-                        mygoodchans = '0:150~160'
-                        flagspw = '0:11~240'
-                        gainspw = '0:21~230'
-                        gainspw2 = ''   # central good channels after split file for self-cal
-	elif mynchan == 512:
-		mygoodchans = '0:200~240'
-		flagspw = '0:21~500'
-		gainspw = '0:41~490'
-		gainspw2 = ''   # central good channels after split file for self-cal	
-
+        gainspw, mygoodchans, flagspw, mypol = getgainspw(msfilename)
+        logging.info(gainspw)
+        logging.info(mygoodchans)
+        logging.info(flagspw)
+        logging.info(mypol)
 # fix targets
 	myfields = getfields(msfilename)
 	stdcals = ['3C48','3C147','3C286','0542+498','1331+305','0137+331']
@@ -246,10 +159,6 @@ if testms == True:
 		else:
 			mytargets.append(myfields[i])
 	mybpcals = myampcals
-##################################
-#	if mypcals==[]:
-#		mypcals = myampcals
-##################################
 #	print("Amplitude caibrators are", myampcals)
 	logging.info('Amplitude caibrators are %s', str(myampcals))
 #	print("Phase calibrators are", mypcals)
@@ -266,14 +175,18 @@ if testms == True:
 	tgtscans=[]
 	for i in range(0,len(mytargets)):
 		tgtscans.extend(getscans(msfilename,mytargets[i]))
-	print(ampcalscans)
-	print(pcalscans)	
-	print(tgtscans)
+#	print(ampcalscans)
+        logging.info(ampcalscans)
+#	print(pcalscans)
+        logging.info(pcalscans)
+#	print(tgtscans)
+        logging.info(tgtscans)
 	allscanlist= ampcalscans+pcalscans+tgtscans
 ###################################
 # get a list of antennas
 	antsused = getantlist(msfilename,int(allscanlist[0]))
-	print(antsused)
+#	print(antsused)
+        logging.info(antsused)
 ###################################
 # find band ants
 	if flagbadants==True:
@@ -347,7 +260,7 @@ if testms == True:
 				default(flagdata)
 				flagdata(vis=msfilename,mode='list', inpfile=myflgcmd)
 		else:
-			logging.info("No bad frequencies found in the range.")
+			logging.info("None of the well-known RFI-prone frequencies were found in the data.")
 ############ Initial flagging ################
 if flaginit == True:
         try:
@@ -657,11 +570,14 @@ if dosplit == True:
 			mypcals.append(myfields[i])
 		else:
 			mytargets.append(myfields[i])
+        gainspw1,goodchans,flg_chans,pols = getgainspw(msfilename)
 	for i in range(0,len(mytargets)):
 		if os.path.isdir(mytargets[i]+'split.ms') == True:
+                        logging.info("The existing split file will be deleted.")
 			os.system('rm -rf '+mytargets[i]+'split.ms')
-                logging.info("The following spw is split for the target source:", gainspw)
-		splitfilename = mysplitinit(msfilename,mytargets[i],gainspw,1)
+                logging.info("Splitting target source data.")
+                logging.info(gainspw1)
+		splitfilename = mysplitinit(msfilename,mytargets[i],gainspw1,1)
 #############################################################
 # Flagging on split file
 #############################################################
@@ -673,6 +589,7 @@ if flagsplitfile == True:
         except AssertionError:
                 logging.info("flagsplitfile = True but the split file not found.")
                 sys.exit()
+        logging.info("Now proceeding to flag on the split file.")
 	myantselect =''
 	mytfcrop(splitfilename,'',myantselect,8.0,8.0,'DATA','')
 	a, b = getbllists(splitfilename)
@@ -694,8 +611,14 @@ if dosplitavg == True:
                 logging.info("dosplitavg = True but the split file not found.")
                 sys.exit()
 	logging.info("Your data will be averaged in frequency.")
-	if os.path.isdir(mytargets[i]+'avg-split.ms') == True:
-		os.system('rm -rf '+mytargets[i]+'avg-split.ms')
+#	if os.path.isdir(mytargets[i]+'avg-split.ms') == True:
+#		os.system('rm -rf '+mytargets[i]+'avg-split.ms')
+#        if os.path.isdir(splitfilename.split('s')[0]+'avg-split.ms') == True:
+#                os.system('rm -rf '+splitfilename.split('s')[0]+'avg-split.ms')
+        if os.path.isdir('avg-'+splitfilename) == True:
+                os.system('rm -rf avg-'+splitfilename)
+                if os.path.isdir('avg-'+splitfilename+'.flagversions') == True:
+                       os.system('rm -rf avg-'+splitfilename+'.flagversions')
 	splitavgfilename = mysplitavg(splitfilename,'','',chanavg)
 
 
@@ -721,10 +644,11 @@ if makedirty == True:
         except AssertionError:
                 logging.info("makedirty = True but the splitavg file not found.")
                 sys.exit()
-	myfile2 = [splitavgfilename]
-	usetclean = True
-	if usetclean == True:
-		myselfcal(myfile2,ref_ant,scaloops,mypcaloops,mJythreshold,imcellsize,imsize_pix,use_nterms,nwprojpl,scalsolints,clipresid,'','',makedirty,niter_start)
+	myfile2 = splitavgfilename
+#	usetclean = True
+#	if usetclean == True:
+#		myselfcal(myfile2,ref_ant,scaloops,pcaloops,mJythreshold,imcellsize,imsize_pix,use_nterms,nwprojpl,scalsolints,clipresid,'','',makedirty,niter_start)
+        mytclean(myfile2,0,mJythreshold,0,imcellsize,imsize_pix,use_nterms,nwprojpl)
 
 if doselfcal == True:
 # 	assert os.path.isdir(splitavgfilename)
@@ -737,6 +661,6 @@ if doselfcal == True:
 	clearcal(vis = splitavgfilename)
 	myfile2 = [splitavgfilename]
 	if usetclean == True:
-		myselfcal(myfile2,ref_ant,scaloops,mypcaloops,mJythreshold,imcellsize,imsize_pix,use_nterms,nwprojpl,scalsolints,clipresid,'','',makedirty,niter_start)
+		myselfcal(myfile2,ref_ant,scaloops,pcaloops,mJythreshold,imcellsize,imsize_pix,use_nterms,nwprojpl,scalsolints,clipresid,'','',False,niter_start)
 
 
