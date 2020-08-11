@@ -32,8 +32,11 @@ logging.info("##################################################################
 logging.info("You are using CAPTURE: CAsa Pipeline-cum-Toolkit for Upgraded GMRT data REduction.")
 logging.info("This has been developed at NCRA by Ruta Kale and Ishwara Chandra.")
 logging.info("#######################################################################################")
+logging.info("LOGFILE = %s", logfile_name)
+logging.info("CASA_LOGFILE = %s", 'casa-'+logfile_name)
 
-print("LOGFILE = %s" % logfile_name)
+CASA_logfile = 'casa-'+logfile_name
+casalog.setlogfile(CASA_logfile)
 
 import ConfigParser
 config = ConfigParser.ConfigParser()
@@ -57,7 +60,7 @@ dosplitavg = config.getboolean('basic','dosplitavg')
 doflagavg = config.getboolean('basic','doflagavg')                             
 makedirty = config.getboolean('basic','makedirty')                            
 doselfcal = config.getboolean('basic','doselfcal')                              
-usetclean = config.getboolean('basic','usetclean')                        
+usetclean = config.getboolean('default','usetclean')                        
 ltafile =config.get('basic','ltafile')
 gvbinpath = config.get('basic', 'gvbinpath').split(',')
 fits_file = config.get('basic','fits_file')
@@ -140,9 +143,13 @@ if frommultisrcms == True:
 
 if testms == True:
         gainspw, mygoodchans, flagspw, mypol = getgainspw(msfilename)
+	logging.info("Channel range for calibration:")
         logging.info(gainspw)
+	logging.info("Assumed clean channel range:")
         logging.info(mygoodchans)
+	logging.info("Channel range for flagging:")
         logging.info(flagspw)
+	logging.info("Polarizations in the file:")
         logging.info(mypol)
 # fix targets
 	myfields = getfields(msfilename)
@@ -176,16 +183,20 @@ if testms == True:
 	for i in range(0,len(mytargets)):
 		tgtscans.extend(getscans(msfilename,mytargets[i]))
 #	print(ampcalscans)
+	logging.info("Amplitude calibrator scans are:")
         logging.info(ampcalscans)
 #	print(pcalscans)
+	logging.info("Phase calibrator scans are:")
         logging.info(pcalscans)
 #	print(tgtscans)
+	logging.info("Target source scans are:")
         logging.info(tgtscans)
 	allscanlist= ampcalscans+pcalscans+tgtscans
 ###################################
 # get a list of antennas
 	antsused = getantlist(msfilename,int(allscanlist[0]))
 #	print(antsused)
+	logging.info("Antennas in the file:")
         logging.info(antsused)
 ###################################
 # find band ants
@@ -194,12 +205,15 @@ if testms == True:
 	if findbadants == True:
 		myantlist = antsused
 		mycmds = []
-		meancutoff = 0.2    # uncalibrated mean cutoff
+#############
+		meancutoff = getbandcut(msfilename)
+#############
 		mycorr1='rr'
 		mycorr2='ll'
 		mygoodchans1=mygoodchans
 		mycalscans = ampcalscans+pcalscans
-		print(mycalscans)
+#		print(mycalscans)
+		logging.info("Calibrator scan numbers:")
 		logging.info(mycalscans)
 		allbadants=[]
 		for j in range(0,len(mycalscans)):
@@ -317,6 +331,8 @@ if flaginit == True:
 # Now summary
 		flagdata(vis=msfilename,mode="summary",datacolumn="DATA", extendflags=True, 
 	        	 name=vis+'summary.split', action="apply", flagbackup=True,overwrite=True, writeflags=True)	
+        logging.info("A flagging summary is provided for the MS file.")
+        flagsummary(msfilename)
 #####################################################################
 # Calibration begins.
 if doinitcal == True:
@@ -397,6 +413,8 @@ if doinitcal == True:
 			applycal(vis=msfilename, field=str(', '.join(mytargets)), spw = flagspw, gaintable=mygaintables,
 		        	 gainfield=[str(', '.join(myampcals)),'',''],interp=['linear','','nearest'], calwt=[False], parang=False)	
 	logging.info("Finished initial calibration.")
+        logging.info("A flagging summary is provided for the MS file.")
+        flagsummary(msfilename)
 #############################################################################3
 #######Ishwar post calibration flagging
 if doflag == True:
@@ -460,7 +478,8 @@ if doflag == True:
 # Now summary
 	flagdata(vis=msfilename,mode="summary",datacolumn="corrected", extendflags=True, 
          name=vis+'summary.split', action="apply", flagbackup=True,overwrite=True, writeflags=True)
-
+        logging.info("A flagging summary is provided for the MS file.")
+        flagsummary(msfilename)
 
 #################### new redocal #########################3
 # Calibration begins.
@@ -544,6 +563,8 @@ if redocal == True:
 			applycal(vis=msfilename, field=str(', '.join(mytargets)), spw = flagspw, gaintable=mygaintables,
 		        	 gainfield=[str(', '.join(myampcals)),'',''],interp=['linear','','nearest'], calwt=[False], parang=False)			
 	logging.info("Finished re-calibration.")
+        logging.info("A flagging summary is provided for the MS file.")
+        flagsummary(msfilename)
 #############################################################
 # SPLIT step
 #############################################################
@@ -599,7 +620,8 @@ if flagsplitfile == True:
 	tdev = 5.0
 	fdev = 5.0
 	myrflag(splitfilename,'',b[0],tdev,fdev,'DATA','')
-	
+	logging.info("A flagging summary is provided for the MS file.")
+        flagsummary(splitfilename)
 #############################################################
 # SPLIT AVERAGE
 #############################################################
@@ -633,7 +655,8 @@ if doflagavg == True:
 	a, b = getbllists(splitavgfilename)
 	myrflagavg(splitavgfilename,'',b[0],6.0,6.0,'DATA','')
 	myrflagavg(splitavgfilename,'',a[0],6.0,6.0,'DATA','')
-
+        logging.info("A flagging summary is provided for the MS file.")
+        flagsummary(splitavgfilename)
 
 ############################################################
 
@@ -645,19 +668,19 @@ if makedirty == True:
                 logging.info("makedirty = True but the splitavg file not found.")
                 sys.exit()
 	myfile2 = splitavgfilename
-#	usetclean = True
-#	if usetclean == True:
-#		myselfcal(myfile2,ref_ant,scaloops,pcaloops,mJythreshold,imcellsize,imsize_pix,use_nterms,nwprojpl,scalsolints,clipresid,'','',makedirty,niter_start)
+	logging.info("A flagging summary is provided for the MS file.")
+	flagsummary(splitavgfilename)
         mytclean(myfile2,0,mJythreshold,0,imcellsize,imsize_pix,use_nterms,nwprojpl)
 
 if doselfcal == True:
-# 	assert os.path.isdir(splitavgfilename)
         try:
                 assert os.path.isdir(splitavgfilename), "doselfcal = True but the splitavg file not found."
         except AssertionError:
                 logging.info("doselfcal = True but the splitavg file not found.")
                 sys.exit()
 	casalog.filter('INFO')
+	logging.info("A flagging summary is provided for the MS file.")
+	flagsummary(splitavgfilename)
 	clearcal(vis = splitavgfilename)
 	myfile2 = [splitavgfilename]
 	if usetclean == True:

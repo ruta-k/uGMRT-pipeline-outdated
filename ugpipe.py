@@ -10,7 +10,11 @@ def vislistobs(msfile):
 	'''Writes the verbose output of the task listobs.'''
 	ms.open(msfile)  
 	outr=ms.summary(verbose=True,listfile=msfile+'.list')
-	print("A file containing listobs output is saved.")
+#	print("A file containing listobs output is saved.")
+	try:
+		assert os.path.isfile(msfile+'.list'),logging.info("A file containing listobs output is saved.")
+	except AssertionError:
+		logging.info("The listobs output as not saved in a .list file. Please check the CASA log.")
 	return outr
 
 def getpols(msfile):
@@ -93,6 +97,31 @@ def getbllists(myfile):
 	mylongbl =[]
 	mylongbl.append(str('; '.join(mycaa)))
 	return myshortbl, mylongbl
+
+
+def getbandcut(inpmsfile):
+	cutoffs = {'L':0.2, 'P':0.5, '235':0.5, '610':0.4, 'b4':0.4, 'b2':0.7, '150':0.7}
+	frange = freq_info(inpmsfile)
+	fmin = min(frange)
+	fmax = max(frange)
+	if fmin > 1050E06:
+		fband = 'L'
+	elif fmin >500E06 and fmin < 1000E06:
+		fband = 'b4'
+	elif fmin >260E06 and fmin < 560E06:
+		fband = 'P'
+	elif fmin > 210E06 and fmin < 260E06:
+		fband = '235'
+	elif fmin > 80E6 and fmin < 200E6:
+		fband = 'b2'
+	else:
+		"Frequency band does not match any of the GMRT bands."
+	logging.info("The frequency band in the file is ")
+	logging.info(fband)
+	xcut = cutoffs.get(fband)
+	logging.info("The mean cutoff used for flagging bad antennas is ")
+	logging.info(xcut)
+	return xcut
 
 def myvisstatampraw1(myfile,myfield,myspw,myant,mycorr,myscan):
 	default(visstat)
@@ -190,7 +219,7 @@ def getgainspw(msfilename):
         gmrtfreq = 0.0
 # check if single pol data
         mypol = getpols(msfilename)
-        logging.info('Your file contains %s polarization products.', mypol)
+#        logging.info('Your file contains %s polarization products.', mypol)
         if mypol == 1:
 #                print("This dataset contains only single polarization data.")
                 logging.info('This dataset contains only single polarization data.')
@@ -227,42 +256,36 @@ def getgainspw(msfilename):
                 gainspw = '0:101~900'
                 gainspw2 = ''   # central good channels after split file for self-cal
                 logging.info("The following channel range will be used.")
-                logging.info(gainspw)
         elif mynchan == 2048:
                 mygoodchans = '0:500~600'   # used for visstat
                 flagspw = '0:101~1900'
                 gainspw = '0:201~1800'
                 gainspw2 = ''   # central good channels after split file for self-cal
                 logging.info("The following channel range will be used.")
-                logging.info(gainspw)
         elif mynchan == 4096:
                 mygoodchans = '0:1000~1200'
                 flagspw = '0:41~4050'
                 gainspw = '0:201~3600'
                 gainspw2 = ''   # central good channels after split file for self-cal
                 logging.info("The following channel range will be used.")
-                logging.info(gainspw)
         elif mynchan == 8192:
                 mygoodchans = '0:2000~3000'
                 flagspw = '0:500~7800'
                 gainspw = '0:1000~7000'
                 gainspw2 = ''   # central good channels after split file for self-cal
                 logging.info("The following channel range will be used.")
-                logging.info(gainspw)
         elif mynchan == 16384:
                 mygoodchans = '0:4000~6000'
                 flagspw = '0:1000~14500'
                 gainspw = '0:2000~13500'
                 gainspw2 = ''   # central good channels after split file for self-cal
                 logging.info("The following channel range will be used.")
-                logging.info(gainspw)
         elif mynchan == 128:
                 mygoodchans = '0:50~70'
                 flagspw = '0:5~115'
                 gainspw = '0:11~115'
                 gainspw2 = ''   # central good channels after split file for self-cal
                 logging.info("The following channel range will be used.")
-                logging.info(gainspw)
         elif mynchan == 256:
 #               if poldata == 'LL':
                 if gmrt235 == True:
@@ -271,21 +294,18 @@ def getgainspw(msfilename):
                         gainspw = '0:91~190'
                         gainspw2 = ''   # central good channels after split file for self-cal
                         logging.info("The following channel range will be used.")
-                        logging.info(gainspw)
                 elif gmrt610 == True:
                         mygoodchans = '0:100~120'
                         flagspw = '0:11~240'
                         gainspw = '0:21~230'
                         gainspw2 = ''   # central good channels after split file for self-cal   
                         logging.info("The following channel range will be used.")
-                        logging.info(gainspw)
                 else:
                         mygoodchans = '0:150~160'
                         flagspw = '0:11~240'
                         gainspw = '0:21~230'
                         gainspw2 = ''   # central good channels after split file for self-cal
                         logging.info("The following channel range will be used.")
-                        logging.info(gainspw)
         elif mynchan == 512:
                 mygoodchans = '0:200~240'
                 flagspw = '0:21~500'
@@ -467,7 +487,13 @@ def myselfcal(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesize,mynte
 				mythresh = str(myvalinit/(i+1))+'mJy'
 				if i < npal:
 					mypap = 'p'
-					print("Using "+ myfile[i]+" for imaging.")
+#					print("Using "+ myfile[i]+" for imaging.")
+					try:
+						assert os.path.isdir(myfile[i])
+					except AssertionError:
+						logging.info("The MS file not found for imaging.")
+						sys.exit()
+					logging.info("Using "+ myfile[i]+" for imaging.")
 					if usetclean == False:
 						myimg = myonlyclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # clean
 					else:
@@ -489,7 +515,12 @@ def myselfcal(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesize,mynte
 						myfile.append(myoutfile)
 				else:
 					mypap = 'ap'
-					print("Using "+ myfile[i]+" for imaging.")
+#					print("Using "+ myfile[i]+" for imaging.")
+                                        try:
+                                                assert os.path.isdir(myfile[i])
+                                        except AssertionError:
+                                                logging.info("The MS file not found for imaging.")
+                                                sys.exit()
 					if usetclean == False:
 						myimg = myonlyclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # clean
 					else:
@@ -507,21 +538,37 @@ def myselfcal(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesize,mynte
 							myapplycal(myfile[i],mygt[i])
 							myoutfile= mysplit(myfile[i],i)
 							myfile.append(myoutfile)
-				print("Visibilities from the previous selfcal will be deleted.")
+#				print("Visibilities from the previous selfcal will be deleted.")
+				logging.info("Visibilities from the previous selfcal will be deleted.")
 				if i < nscal:
 					fprefix = getfields(myfile[i])[0]
 					myoldvis = fprefix+'-selfcal'+str(i-1)+'.ms'
-					print("Deleting "+str(myoldvis))
+#					print("Deleting "+str(myoldvis))
+					logging.info("Deleting "+str(myoldvis))
 					os.system('rm -rf '+str(myoldvis))
-			print('Ran the selfcal loop')
+#			print('Ran the selfcal loop')
 	return myfile, mygt, myimages
 
-def myflagsum(myfile,myfields):
-	flagsum = flagdata(vis=myfile, field =myfields[0], mode='summary')
-	for i in range(0,len(myfields)):
-		src = myfields[i]
-		flagpercentage = 100.0 * flagsum['field'][src]['flagged'] / flagsum['field'][src]['total']
-	return flagpercentage
+
+
+def flagsummary(myfile):
+	try:
+		assert os.path.isdir(myfile), "The MS file was not found."
+	except AssertionError:
+		logging.info("The MS file was not found.")
+		sys.exit()
+        s = flagdata(vis=myfile, mode='summary')
+        allkeys = s.keys()
+	logging.info("Flagging percentage:")
+        for x in allkeys:
+                try:
+                        for y in s[x].keys():
+                                flagged_percent = 100.*(s[x][y]['flagged']/s[x][y]['total'])
+#                                logging.info(x, y, "%0.2f" % flagged_percent, "% flagged.")
+				logstring = str(x)+' '+str(y)+' '+str(flagged_percent)
+                                logging.info(logstring)
+                except AttributeError:
+                        pass
+
 
 #############End of functions##############################################################################
-print("#######################################################################################")
