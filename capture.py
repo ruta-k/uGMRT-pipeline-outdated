@@ -89,6 +89,7 @@ target = config.getboolean('default','target')
 
 execfile('ugpipe.py')
 
+testfitsfile = False
 
 if fromlta == True:
 	logging.info("You have chosen to convert lta to FITS.")
@@ -99,9 +100,21 @@ if fromlta == True:
 		testgvfits = os.path.isfile(gvbinpath[1])
 		if testlistscan and testgvfits == True:
 			os.system(gvbinpath[0]+' '+ltafile)
-                        if fits_file != 'TEST.FITS':
-                            os.system("sed -i 's/TEST.FITS/'"+fits_file+"/ "+ltafile.split('.')[0]+'.log')
-			os.system(gvbinpath[1]+' '+ltafile.split('.')[0]+'.log')
+                        if fits_file!= '' and fits_file != 'TEST.FITS':
+                                os.system("sed -i 's/TEST.FITS/'"+fits_file+"/ "+ltafile.split('.')[0]+'.log')
+                        try:
+                                assert os.path.isfile(fits_file)
+                                testfitsfile = True
+                        except AssertionError:
+                                if os.path.isfile('TEST.FITS') == True: 
+#                                assert os.path.isfile('TEST.FITS'), 
+                                        logging.info("The file TEST.FITS file already exists. New will not be created.")
+                                        testfitsfile = True
+                                        fits_file = 'TEST.FITS'
+                                else:
+#                        except AssertionError:
+		                        os.system(gvbinpath[1]+' '+ltafile.split('.')[0]+'.log')
+                                        testfitsfile = True
     		else:	
 			logging.info("Error: Check if listscan and gvfits are present and executable.")
 	else:
@@ -110,13 +123,24 @@ if fromlta == True:
 		sys.exit()
 
 
-testfitsfile = False 
+#testfitsfile = False 
 
 if fromfits == True:
-	testfitsfile = os.path.isfile(fits_file)
-	if testfitsfile == False:
-		logging.info("The FITS file does not exist. Exiting the code...")
-		sys.exit()
+        if fits_file != '':
+                try:
+                        assert os.path.isfile(fits_file)
+                        testfitsfile = True
+                except AssertionError:
+                        try:
+                                assert os.path.isfile('TEST.FITS')
+                                testfitsfile = True
+                        except AssertionError:
+                                logging.info("Please provide the name of the FITS file.")
+                                sys.exit()
+#	testfitsfile = os.path.isfile(fits_file)
+#	if testfitsfile == False:
+#		logging.info("The FITS file does not exist. Exiting the code...")
+#		sys.exit()
 		
 
 if testfitsfile == True:
@@ -124,9 +148,17 @@ if testfitsfile == True:
                 try:
                         assert os.path.isdir(msfilename), "The given msfile already exists, will not create new."
                 except AssertionError:
-                        logging.info("The given msfile already exists, will not create new.")
+                        logging.info("The given msfile does not exist, will create new.")
         else:
-                msfilename = fits_file+'.MS'
+                try:
+                        assert os.path.isdir(fits_file+'.MS')
+                except AssertionError:
+                        msfilename = fits_file+'.MS'
+#        try:
+#                assert os.path.isdir(msfilename)
+#        except AssertionError:
+#                logging.info("Please provide the msfilename.")
+#                sys.exit()                
 	default(importgmrt)
 	importgmrt(fitsfile=fits_file, vis = msfilename)
 	if os.path.isfile(msfilename+'.list') == True:
@@ -138,9 +170,18 @@ if testfitsfile == True:
 testms = False
 
 if frommultisrcms == True:
-	testms = os.path.isdir(msfilename)
+        if msfilename != '':
+	        testms = os.path.isdir(msfilename)
+        else:
+                try:
+                        assert os.path.isdir('TEST.FITS.MS')
+                        testms = True
+                        msfilename = 'TEST.FITS.MS'
+                except AssertionError:
+                        logging.info("Tried to find the MS file with default name. File not found. Please provide the name of the msfile or create the MS by setting fromfits = True.")
+                        sys.exit()
 	if testms == False:
-		logging.info("The MS file does not exist. Exiting the code...")
+		logging.info("The MS file does not exist. Please provide msfilename. Exiting the code...")
                 sys.exit()
 
 
