@@ -41,7 +41,7 @@ casalog.setlogfile(CASA_logfile)
 
 import ConfigParser
 config = ConfigParser.ConfigParser()
-config.read('ugpipe_config.ini')
+config.read('config_capture.ini')
 
 
 fromlta = config.getboolean('basic', 'fromlta')
@@ -87,7 +87,8 @@ nwprojpl = config.getint('basic','nwprojpl')
 uvrascal=config.get('default','uvrascal')
 target = config.getboolean('default','target')
 
-execfile('ugpipe.py')
+
+execfile('ugfunctions.py')
 
 testfitsfile = False
 
