@@ -34,6 +34,7 @@ logging.info("This has been developed at NCRA by Ruta Kale and Ishwara Chandra."
 logging.info("#######################################################################################")
 logging.info("LOGFILE = %s", logfile_name)
 logging.info("CASA_LOGFILE = %s", 'casa-'+logfile_name)
+logging.info("#######################################################################################")
 
 CASA_logfile = 'casa-'+logfile_name
 casalog.setlogfile(CASA_logfile)
@@ -69,7 +70,6 @@ splitfilename =config.get('basic','splitfilename')
 splitavgfilename = config.get('basic','splitavgfilename')
 setquackinterval = config.getfloat('basic','setquackinterval')
 ref_ant = config.get('basic','ref_ant')
-uvracal =config.get('basic','uvracal')
 clipfluxcal = [float(config.get('basic','clipfluxcal').split(',')[0]),float(config.get('basic','clipfluxcal').split(',')[1])]
 clipphasecal =[float(config.get('basic','clipphasecal').split(',')[0]),float(config.get('basic','clipphasecal').split(',')[1])]
 cliptarget =[float(config.get('basic','cliptarget').split(',')[0]),float(config.get('basic','cliptarget').split(',')[1])]   
