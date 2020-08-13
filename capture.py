@@ -84,6 +84,7 @@ scalsolints = config.get('basic','scalsolints').split(',')
 niter_start = int(config.get('basic','niter_start'))
 use_nterms = config.getint('basic','use_nterms')
 nwprojpl = config.getint('basic','nwprojpl')
+uvracal=config.get('default','uvracal')
 uvrascal=config.get('default','uvrascal')
 target = config.getboolean('default','target')
 
