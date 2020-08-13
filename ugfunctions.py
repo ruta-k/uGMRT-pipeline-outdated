@@ -146,7 +146,7 @@ def myvisstatampraw(myfile,myspw,myant,mycorr,myscan):
 
 def mygaincal_ap1(myfile,mycal,myref,myflagspw,myuvracal,calsuffix):
 	default(gaincal)
-	gaincal(vis=myfile, caltable=str(myfile)+'.AP.G.', spw =myflagspw,uvrange=myuvracal,append=True,
+	gaincal(vis=myfile, caltable=str(myfile)+'.AP.G', spw =myflagspw,uvrange=myuvracal,append=True,
 		field=mycal,solint = '120s',refant = myref, minsnr = 2.0, solmode ='L1R', gaintype = 'G', calmode = 'ap',
 		gaintable = [str(myfile)+'.K1', str(myfile)+'.B1' ], interp = ['nearest,nearestflag', 'nearest,nearestflag' ], 
 		parang = True )
@@ -155,20 +155,20 @@ def mygaincal_ap1(myfile,mycal,myref,myflagspw,myuvracal,calsuffix):
 
 def mygaincal_ap2(myfile,mycal,myref,myflagspw,myuvracal,calsuffix):
 	default(gaincal)
-	gaincal(vis=myfile, caltable=str(myfile)+'.AP.G.'+calsuffix, spw =myflagspw,uvrange=myuvracal,append=True,
+	gaincal(vis=myfile, caltable=str(myfile)+'.AP.G'+calsuffix, spw =myflagspw,uvrange=myuvracal,append=True,
 		field=mycal,solint = '120s',refant = myref, minsnr = 2.0, solmode ='L1R', gaintype = 'G', calmode = 'ap',
 		gaintable = [str(myfile)+'.K1'+calsuffix, str(myfile)+'.B1'+calsuffix ], interp = ['nearest,nearestflag', 'nearest,nearestflag' ], 
 		parang = True )
 	return gaintable
 
 def getfluxcal(myfile,mycalref,myscal):
-	myscale = fluxscale(vis=myfile, caltable=str(myfile)+'.AP.G.', fluxtable=str(myfile)+'.fluxscale', reference=mycalref, transfer=myscal,
+	myscale = fluxscale(vis=myfile, caltable=str(myfile)+'.AP.G', fluxtable=str(myfile)+'.fluxscale', reference=mycalref, transfer=myscal,
                     incremental=False)
 	return myscale
 
 
 def getfluxcal2(myfile,mycalref,myscal,calsuffix):
-	myscale = fluxscale(vis=myfile, caltable=str(myfile)+'.AP.G.'+calsuffix, fluxtable=str(myfile)+'.fluxscale'+calsuffix, reference=mycalref,
+	myscale = fluxscale(vis=myfile, caltable=str(myfile)+'.AP.G'+calsuffix, fluxtable=str(myfile)+'.fluxscale'+calsuffix, reference=mycalref,
        	            transfer=myscal, incremental=False)
 	return myscale
 
@@ -183,7 +183,7 @@ def mygaincal_ap_redo(myfile,mycal,myref,myflagspw,myuvracal):
 	return gaintable
 
 def getfluxcal_redo(myfile,mycalref,myscal):
-	myscale = fluxscale(vis=myfile, caltable=str(myfile)+'.AP.G.'+'recal', fluxtable=str(myfile)+'.fluxscale'+'recal', reference=mycalref,
+	myscale = fluxscale(vis=myfile, caltable=str(myfile)+'.AP.G'+'recal', fluxtable=str(myfile)+'.fluxscale'+'recal', reference=mycalref,
                     transfer=myscal, incremental=False)
 	return myscale
 
