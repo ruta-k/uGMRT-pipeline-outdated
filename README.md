@@ -1,4 +1,4 @@
-# capture
+# uGMRT-pipeline
 
 CAPTURE: A CAsa Pipeline-cum-Toolkit for Upgraded Giant Metrewave Radio Telescope data REduction
 uGMRT-pipeline
