@@ -7,13 +7,9 @@
 # Date: 8th Aug 2019
 # README : Please read the following instructions to run this pipeline on your data
 # Files and paths required
-# 0. This script should be placed and executed in the directory where your data files are located.
-# 1. If starting from lta file, please provide the paths to the listscan and gvfits binaries in "gvbinpath" as shown.
+# 0. This files from git should be placed and executed in the directory where your data files are located.
+# 1. If starting from lta file, please provide the paths to the listscan and gvfits executable binaries in "gvbinpath" as shown.
 # 2. Keep the vla-cals.list file in the same area.
-# 3. The settings True/False at the beginning are relevant for processing the file from a given stage.
-# 4. Below these there are inputs to be set for your data.
-# 5. You will not need to change anything below the Inputs block under normal circumstances.
-# 6. You will have self-calibrated image of your target source at the end of the pipeline.
 # Please email ruta@ncra.tifr.res.in if you run into any issue and cannot solve.
 # 
 
@@ -114,7 +110,6 @@ if fromlta == True:
                                         testfitsfile = True
                                         fits_file = 'TEST.FITS'
                                 else:
-#                        except AssertionError:
 		                        os.system(gvbinpath[1]+' '+ltafile.split('.')[0]+'.log')
                                         testfitsfile = True
     		else:	
@@ -139,10 +134,7 @@ if fromfits == True:
                         except AssertionError:
                                 logging.info("Please provide the name of the FITS file.")
                                 sys.exit()
-#	testfitsfile = os.path.isfile(fits_file)
-#	if testfitsfile == False:
-#		logging.info("The FITS file does not exist. Exiting the code...")
-#		sys.exit()
+
 		
 
 if testfitsfile == True:
@@ -155,12 +147,7 @@ if testfitsfile == True:
                 try:
                         assert os.path.isdir(fits_file+'.MS')
                 except AssertionError:
-                        msfilename = fits_file+'.MS'
-#        try:
-#                assert os.path.isdir(msfilename)
-#        except AssertionError:
-#                logging.info("Please provide the msfilename.")
-#                sys.exit()                
+                        msfilename = fits_file+'.MS'           
 	default(importgmrt)
 	importgmrt(fitsfile=fits_file, vis = msfilename)
 	if os.path.isfile(msfilename+'.list') == True:
@@ -212,11 +199,8 @@ if testms == True:
 		else:
 			mytargets.append(myfields[i])
 	mybpcals = myampcals
-#	print("Amplitude caibrators are", myampcals)
 	logging.info('Amplitude caibrators are %s', str(myampcals))
-#	print("Phase calibrators are", mypcals)
 	logging.info('Phase calibrators are %s', str(mypcals))
-#	print("Target sources are", mytargets)
 	logging.info('Target sources are %s', str(mytargets))
 # need a condition to see if the pcal is same as 
 	ampcalscans =[]
@@ -241,7 +225,6 @@ if testms == True:
 ###################################
 # get a list of antennas
 	antsused = getantlist(msfilename,int(allscanlist[0]))
-#	print(antsused)
 	logging.info("Antennas in the file:")
         logging.info(antsused)
 ###################################
@@ -394,7 +377,6 @@ if doinitcal == True:
 	for i in range(0,len(myampcals)):
 		default(setjy)
 		setjy(vis=msfilename, spw=flagspw, field=myampcals[i])
-#		print("Done setjy on %s"% myampcals[i])
 # Delay calibration  using the first flux calibrator in the list - should depend on which is less flagged
 	if os.path.isdir(str(msfilename)+'.K1'+mycalsuffix) == True:
 		os.system('rm -rf '+str(msfilename)+'.K1'+mycalsuffix)
@@ -464,7 +446,6 @@ if doinitcal == True:
 #############################################################################3
 #######Ishwar post calibration flagging
 if doflag == True:
-#	assert os.path.isdir(msfilename), "doflag = True but ms file not found."
         try:
                 assert os.path.isdir(msfilename), "doflag = True but ms file not found."
         except AssertionError:
@@ -530,7 +511,6 @@ if doflag == True:
 #################### new redocal #########################3
 # Calibration begins.
 if redocal == True:
-#	assert os.path.isdir(msfilename), "redocal = True but ms file not found."
         try:
                 assert os.path.isdir(msfilename), "redocal = True but ms file not found."
         except AssertionError:
@@ -650,7 +630,6 @@ if dosplit == True:
 #############################################################
 
 if flagsplitfile == True:
-#	assert os.path.isdir(splitfilename), "flagsplitfile = True but the split file not found."
         try:
                 assert os.path.isdir(splitfilename), "flagsplitfile = True but the split file not found."
         except AssertionError:
@@ -672,17 +651,12 @@ if flagsplitfile == True:
 # SPLIT AVERAGE
 #############################################################
 if dosplitavg == True:
-#	assert os.path.isdir(splitfilename)
         try:
                 assert os.path.isdir(splitfilename), "dosplitavg = True but the split file not found."
         except AssertionError:
                 logging.info("dosplitavg = True but the split file not found.")
                 sys.exit()
 	logging.info("Your data will be averaged in frequency.")
-#	if os.path.isdir(mytargets[i]+'avg-split.ms') == True:
-#		os.system('rm -rf '+mytargets[i]+'avg-split.ms')
-#        if os.path.isdir(splitfilename.split('s')[0]+'avg-split.ms') == True:
-#                os.system('rm -rf '+splitfilename.split('s')[0]+'avg-split.ms')
         if os.path.isdir('avg-'+splitfilename) == True:
                 os.system('rm -rf avg-'+splitfilename)
                 if os.path.isdir('avg-'+splitfilename+'.flagversions') == True:
@@ -691,7 +665,6 @@ if dosplitavg == True:
 
 
 if doflagavg == True:
-#	assert os.path.isdir(splitavgfilename)
         try:
                 assert os.path.isdir(splitavgfilename), "doflagavg = True but the splitavg file not found."
         except AssertionError:
@@ -707,7 +680,6 @@ if doflagavg == True:
 ############################################################
 
 if makedirty == True:
-#	assert os.path.isdir(splitavgfilename)
         try:
                 assert os.path.isdir(splitavgfilename), "makedirty = True but the splitavg file not found."
         except AssertionError:
