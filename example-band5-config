@@ -1,0 +1,53 @@
+# The following inputs are an example config_capture.ini for band-5 of the uGMRT. 
+# With use_nterms = 1 instead of 2, these inputs can be used for the legacy GMRT 1400 MHz band.
+# The user will have to provide these in the config_capture.ini.
+
+[basic]
+fromlta = True
+fromfits = True
+frommultisrcms = True
+findbadants = True  
+flagbadants = True   
+findbadchans = True 
+flagbadfreq = True  
+flaginit = True   
+doinitcal = True    
+doflag = True     
+redocal = True      
+dosplit = True      
+flagsplitfile = True  
+dosplitavg = True   
+doflagavg = True    
+makedirty = True   
+doselfcal = True     
+#################
+ltafile = file.lta
+gvbinpath = ./listscan,./gvfits
+fits_file = TEST.FITS           
+msfilename = test.ms              
+splitfilename = 
+splitavgfilename =                  
+setquackinterval = 10.0   
+ref_ant = C00         
+clipfluxcal = 0.0,60.0
+clipphasecal = 0.0,60.0     
+cliptarget = 0.0,30.0       
+clipresid = 0.0,10.0        
+chanavg = 10              
+imcellsize = 0.5arcsec     
+imsize_pix = 8000          
+scaloops = 8               
+mJythreshold = 0.01        
+pcaloops = 6             
+scalsolints = 10.0min,5.0min,4.0min,2.0min,1.0min,4.0min,2.0min,1.0min
+niter_start = 2500
+use_nterms = 2       
+nwprojpl = -1
+#######################################################################################################################
+# Do not change anything below this line if you are not familiar with this pipeline.
+########################################################################################################################
+[default]
+uvracal =      
+uvrascal =      
+target = True 
+usetclean = True
