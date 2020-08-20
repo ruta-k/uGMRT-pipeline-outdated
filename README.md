@@ -15,7 +15,8 @@ casa -c capture.py OR
 
 execfile("capture.py")
 
-############################################################################################ CAVEATS for CAPTURE V0:
+############################################################################################ 
+CAVEATS for CAPTURE v1.0.0:
 
 LTA to FITS conversion: If you are starting from a "lta" file - you need to make sure that the listscan and gvfits are executable before starting to run the pipeline. You can convert these to executable files using the commands e.g.: $chmod +x listscan $chmod +x gvfits
 
