@@ -100,7 +100,7 @@ def getbllists(myfile):
 
 
 def getbandcut(inpmsfile):
-	cutoffs = {'L':0.2, 'P':0.5, '235':0.5, '610':0.4, 'b4':0.4, 'b2':0.7, '150':0.7}
+	cutoffs = {'L':0.2, 'P':0.3, '235':0.5, '610':0.2, 'b4':0.2, 'b2':0.7, '150':0.7}
 	frange = freq_info(inpmsfile)
 	fmin = min(frange)
 	fmax = max(frange)
