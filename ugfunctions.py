@@ -104,7 +104,7 @@ def getbandcut(inpmsfile):
 	frange = freq_info(inpmsfile)
 	fmin = min(frange)
 	fmax = max(frange)
-	if fmin > 1050E06:
+	if fmin > 1000E06:
 		fband = 'L'
 	elif fmin >500E06 and fmin < 1000E06:
 		fband = 'b4'
