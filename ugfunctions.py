@@ -423,15 +423,15 @@ def mysbgaincal_ap(myfile,xgt,myref,mygtable,srno,pap,mysolint,myuvrascal,mygain
 		mycalmode='p'
 		mysol= mysolint[srno] 
 		mysolnorm = False
-	if os.path.isdir(fprefix+str(pap)+str(srno)+'.GT'):
+	if os.path.isdir(fprefix+str(pap)+str(srno)+str(xgt)+'.GT'):
 		os.system('rm -rf '+str(pap)+str(srno)+str(xgt)+'.GT')
 	default(gaincal)
-	gaincal(vis=myfile, caltable=fprefix+str(pap)+str(xgt)+str(srno)+'.GT', append=False, field='0', spw=str(xgt),
+	gaincal(vis=myfile, caltable=fprefix+str(pap)+str(srno)+str(xgt)+'.GT', append=False, field='0', spw=str(xgt),
 		uvrange=myuvrascal, solint = mysol, refant = myref, minsnr = 2.0,solmode='L1R', gaintype = 'G',
 		solnorm= mysolnorm, calmode = mycalmode, gaintable = [], interp = ['nearest,nearestflag', 'nearest,nearestflag' ], 
 		parang = True )
 		
-	mycal = str(pap)+str(xgt)+str(srno)+'.GT'
+	mycal = str(pap)+str(srno)+str(xgt)+'.GT'
 	return mycal
 
 
@@ -443,6 +443,12 @@ def myapplycal(myfile,mygaintables):
 	print('Ran applycal.')
 
 
+def mysbapplycal(myfile,mygaintables,xgt):
+	default(applycal)
+	applycal(vis=myfile, field='0',,spw=str(xgt), gaintable=mygaintables, gainfield=['0'], applymode='calflag', 
+	         interp=['linear'], calwt=False, parang=False)
+	print('Ran applycal.')
+	
 
 
 def flagresidual(myfile,myclipresid,myflagspw):
@@ -678,13 +684,13 @@ def mysubbandselfcal(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesiz
 					flagresidual(myfile[i],clipresid,'')
 					if i>0 and i<nscal+1:
 						for xgt in range(0,len(msspw)):	
-							myctables = mysbgaincal_ap(myfile[i],xgt,myref,mygt[i-1],i,mypap,mysolint1,uvrascal,mygainspw2)
-							myapplycal(myfile[i],myctables,xgt,mygainspw2)
+							myctables = mysbgaincal_ap(myfile[i],xgt,myref,mygt[i-1],i,mypap,mysolint1,'',mygainspw2)
+							mysbapplycal(myfile[i],myctables,xgt)
 							mygt.append(myctables) # full list of gaintables							
 					else:				
 						for xgt in range(0,len(msspw)):	
-							myctables = mysbgaincal_ap(myfile[i],xgt,myref,mygt,i,mypap,mysolint1,uvrascal,mygainspw2)		
-							myapplycal(myfile[i],myctables,xgt,mygainspw2)	
+							myctables = mysbgaincal_ap(myfile[i],xgt,myref,mygt,i,mypap,mysolint1,'',mygainspw2)		
+							mysbapplycal(myfile[i],myctables,xgt)	
 							mygt.append(myctables) # full list of gaintables
 
 					if i < nscal+1:
