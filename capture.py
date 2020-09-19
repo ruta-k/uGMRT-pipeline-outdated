@@ -707,9 +707,9 @@ if doselfcal == True:
 		
 if dosubbandselfcal == True:
         try:
-                assert os.path.isdir(splitavgfilename), "doselfcal = True but the splitavg file not found."
+                assert os.path.isdir(splitavgfilename), "dosubbandselfcal = True but the splitavg file not found."
         except AssertionError:
-                logging.info("doselfcal = True but the splitavg file not found.")
+                logging.info("dosubbandselfcal = True but the splitavg file not found.")
                 sys.exit()
 	casalog.filter('INFO')
 	logging.info("A flagging summary is provided for the MS file.")
@@ -718,7 +718,6 @@ if dosubbandselfcal == True:
 	myfile2 = [splitavgfilename]
 	if usetclean == True:
 		mysubbandselfcal(myfile2,ref_ant,scaloops,pcaloops,mJythreshold,imcellsize,imsize_pix,use_nterms,nwprojpl,scalsolints,clipresid,'','',False,niter_start)
-
 
 
 
