@@ -412,6 +412,28 @@ def mygaincal_ap(myfile,myref,mygtable,srno,pap,mysolint,myuvrascal,mygainspw):
 		parang = True )
 	mycal = fprefix+str(pap)+str(srno)+'.GT'
 	return mycal
+def mysbgaincal_ap(myfile,xgt,myref,mygtable,srno,pap,mysolint,myuvrascal,mygainspw):
+
+	fprefix = getfields(myfile)[0]
+	if pap=='ap':
+		mycalmode='ap'
+		mysol= mysolint[srno] 
+		mysolnorm = True
+	else:
+		mycalmode='p'
+		mysol= mysolint[srno] 
+		mysolnorm = False
+	if os.path.isdir(fprefix+str(pap)+str(srno)+'.GT'):
+		os.system('rm -rf '+str(pap)+str(srno)+str(xgt)+'.GT')
+	default(gaincal)
+	gaincal(vis=myfile, caltable=fprefix+str(pap)+str(xgt)+str(srno)+'.GT', append=False, field='0', spw=str(xgt),
+		uvrange=myuvrascal, solint = mysol, refant = myref, minsnr = 2.0,solmode='L1R', gaintype = 'G',
+		solnorm= mysolnorm, calmode = mycalmode, gaintable = [], interp = ['nearest,nearestflag', 'nearest,nearestflag' ], 
+		parang = True )
+		
+	mycal = str(pap)+str(xgt)+str(srno)+'.GT'
+	return mycal
+
 
 
 def myapplycal(myfile,mygaintables):
@@ -656,12 +678,12 @@ def mysubbandselfcal(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesiz
 					flagresidual(myfile[i],clipresid,'')
 					if i>0 and i<nscal+1:
 						for xgt in range(0,len(msspw)):	
-							myctables = mygaincal_ap(myfile[i],xgt,myref,mygt[i-1],i,mypap,mysolint1,uvrascal,mygainspw2)
+							myctables = mysbgaincal_ap(myfile[i],xgt,myref,mygt[i-1],i,mypap,mysolint1,uvrascal,mygainspw2)
 							myapplycal(myfile[i],myctables,xgt,mygainspw2)
 							mygt.append(myctables) # full list of gaintables							
 					else:				
 						for xgt in range(0,len(msspw)):	
-							myctables = mygaincal_ap(myfile[i],xgt,myref,mygt,i,mypap,mysolint1,uvrascal,mygainspw2)		
+							myctables = mysbgaincal_ap(myfile[i],xgt,myref,mygt,i,mypap,mysolint1,uvrascal,mygainspw2)		
 							myapplycal(myfile[i],myctables,xgt,mygainspw2)	
 							mygt.append(myctables) # full list of gaintables
 
@@ -690,7 +712,7 @@ def mysubbandselfcal(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesiz
 					flagresidual(myfile[i],clipresid,'')
 					if i!= nscal:
 						for xgt in range(0,len(msspw)):	
-							myctables = mygaincal_ap(myfile[i],xgt,myref,mygt[i-1],i,mypap,mysolint1,'',mygainspw2)		
+							myctables = mysbgaincal_ap(myfile[i],xgt,myref,mygt[i-1],i,mypap,mysolint1,'',mygainspw2)		
 							myapplycal(myfile[i],myctables,xgt,mygainspw2)	
 						if i < nscal+1:
 							myoutfile= mysplit(myfile[i],i)
