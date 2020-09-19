@@ -548,6 +548,164 @@ def myselfcal(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesize,mynte
 					os.system('rm -rf '+str(myoldvis))
 #			print('Ran the selfcal loop')
 	return myfile, mygt, myimages
+def mysubbandselfcal(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesize,mynterms2,mywproj1,mysolint1,myclipresid,myflagspw,mygainspw2,mymakedirty,niterstart):
+	myref = myref
+	nscal = nloops # number of selfcal loops
+	npal = nploops # number of phasecal loops
+	os.system('rm -r msimg*')
+	splitspw=[]
+	msspw=[]
+	gainsplitspw=[]
+	xchan=100
+	myx=getnchan(myfile[0])
+	if myx>xchan:
+		mynchani=myx
+		xs=0
+		while mynchani>0:
+			if mynchani>xchan:
+			    spwi='0:'+str(xs*xchan)+'~'+str(((xs+1)*xchan)-1)
+			    if xs==0:
+				gspwi='0:'+str(100)+'~'+str(((xs+1)*xchan)-1)
+			    else:
+				gspwi='0:'+str(0)+'~'+str(xchan-1)
+			if mynchani<=xchan:
+			    spwi='0:'+str(xs*xchan)+'~'+str((xs*xchan)+mynchani-1)
+			    gspwi='0:'+str(0)+'~'+str(mynchani-1)
+			    
+
+
+
+			gainsplitspw.append(gspwi)        
+			msspw.append(spwi)
+			mynchani=mynchani-xchan
+			myfilei="msimg"+str(xs)+".ms"
+			xs=xs+1
+			splitspw.append(myfilei)
+		print(gainsplitspw)
+		print(msspw)
+		print(splitspw)
+		
+		for numspw in range(0,len(msspw)):
+				default(mstransform)
+				mstransform(vis=myfile[0],outputvis=splitspw[numspw],spw=msspw[numspw],chanaverage=False,datacolumn='all',realmodelcol=True)
+		os.system("rm -r"+" old"+myfile[0])
+		os.system("rm -r"+" old"+myfile[0]+".flagversions")
+		os.system("mv "+myfile[0]+".flagversions old"+myfile[0]+".flagversions")
+		os.system("mv  "+myfile[0]+" old"+myfile[0])
+		concat(vis=splitspw,concatvis=myfile[0])
+	mygainspw2=gainsplitspw
+     
+	# selfcal loop
+	myimages=[]
+	mygt=[]
+	myniterstart = niterstart
+	myniterend = 200000	
+	if nscal == 0:
+		i = nscal
+		myniter = 0 # this is to make a dirty image
+		mythresh = str(myvalinit/(i+1))+'mJy'
+		print("Using "+ myfile[i]+" for making only an image.")
+		if usetclean == False:
+			myimg = myonlyclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # clean
+		else:
+			myimg = mytclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # tclean
+                if mynterms2 > 1:
+                        exportfits(imagename=myimg+'.image.tt0', fitsimage=myimg+'.fits')
+                else:
+                        exportfits(imagename=myimg+'.image', fitsimage=myimg+'.fits')
+
+	else:
+		for i in range(0,nscal+1): # plan 4 P and 4AP iterations
+			if mymakedirty == True:
+				if i == 0:
+					myniter = 0 # this is to make a dirty image
+					mythresh = str(myvalinit/(i+1))+'mJy'
+					print("Using "+ myfile[i]+" for making only a dirty image.")
+					if usetclean == False:
+						myimg = myonlyclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # clean
+					else:
+						myimg = mytclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # tclean
+					if mynterms2 > 1:
+						exportfits(imagename=myimg+'.image.tt0', fitsimage=myimg+'.fits')
+					else:
+						exportfits(imagename=myimg+'.image', fitsimage=myimg+'.fits')
+
+			else:
+				myniter=int(myniterstart*2**i) #myniterstart*(2**i)  # niter is doubled with every iteration int(startniter*2**count)
+				if myniter > myniterend:
+					myniter = myniterend
+				mythresh = str(myvalinit/(i+1))+'mJy'
+				if i < npal:
+					mypap = 'p'
+#					print("Using "+ myfile[i]+" for imaging.")
+					try:
+						assert os.path.isdir(myfile[i])
+					except AssertionError:
+						logging.info("The MS file not found for imaging.")
+						sys.exit()
+					logging.info("Using "+ myfile[i]+" for imaging.")
+					if usetclean == False:
+						myimg = myonlyclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # clean
+					else:
+						myimg = mytclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # tclean
+					if mynterms2 > 1:
+						exportfits(imagename=myimg+'.image.tt0', fitsimage=myimg+'.fits')
+					else:
+						exportfits(imagename=myimg+'.image', fitsimage=myimg+'.fits')
+					myimages.append(myimg)	# list of all the images created so far
+					flagresidual(myfile[i],clipresid,'')
+					if i>0 and i<nscal+1:
+						for xgt in range(0,len(msspw)):	
+							myctables = mygaincal_ap(myfile[i],xgt,myref,mygt[i-1],i,mypap,mysolint1,uvrascal,mygainspw2)
+							myapplycal(myfile[i],myctables,xgt,mygainspw2)
+							mygt.append(myctables) # full list of gaintables							
+					else:				
+						for xgt in range(0,len(msspw)):	
+							myctables = mygaincal_ap(myfile[i],xgt,myref,mygt,i,mypap,mysolint1,uvrascal,mygainspw2)		
+							myapplycal(myfile[i],myctables,xgt,mygainspw2)	
+							mygt.append(myctables) # full list of gaintables
+
+					if i < nscal+1:
+
+						myoutfile= mysplit(myfile[i],i)
+						myfile.append(myoutfile)
+
+				else:
+					mypap = 'ap'
+#					print("Using "+ myfile[i]+" for imaging.")
+                                        try:
+                                                assert os.path.isdir(myfile[i])
+                                        except AssertionError:
+                                                logging.info("The MS file not found for imaging.")
+                                                sys.exit()
+					if usetclean == False:
+						myimg = myonlyclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # clean
+					else:
+						myimg = mytclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # tclean
+					if mynterms2 > 1:
+						exportfits(imagename=myimg+'.image.tt0', fitsimage=myimg+'.fits')
+					else:
+						exportfits(imagename=myimg+'.image', fitsimage=myimg+'.fits')
+					myimages.append(myimg)	# list of all the images created so far
+					flagresidual(myfile[i],clipresid,'')
+					if i!= nscal:
+						for xgt in range(0,len(msspw)):	
+							myctables = mygaincal_ap(myfile[i],xgt,myref,mygt[i-1],i,mypap,mysolint1,'',mygainspw2)		
+							myapplycal(myfile[i],myctables,xgt,mygainspw2)	
+						if i < nscal+1:
+							myoutfile= mysplit(myfile[i],i)
+							myfile.append(myoutfile)
+
+#				print("Visibilities from the previous selfcal will be deleted.")
+				logging.info("Visibilities from the previous selfcal will be deleted.")
+				if i < nscal:
+					fprefix = getfields(myfile[i])[0]
+					myoldvis = fprefix+'-selfcal'+str(i-1)+'.ms'
+#					print("Deleting "+str(myoldvis))
+					logging.info("Deleting "+str(myoldvis))
+					os.system('rm -rf '+str(myoldvis))
+#			print('Ran the selfcal loop')
+	return myfile, mygt, myimages
 
 
 
