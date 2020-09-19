@@ -363,6 +363,37 @@ def mytclean(myfile,myniter,mythresh,srno,cell,imsize, mynterms1,mywproj):    # 
        			interactive=False)
 	return myoutimg
 
+def mysbtclean(myfile,myniter,mythresh,srno,cell,imsize, mynterms1,mywproj):    # you may change the multi-scale inputs as per your field
+	nameprefix = getfields(myfile)[0]#myfile.split('.')[0]
+	print("The image files have the following prefix =",nameprefix)
+	if myniter==0:
+		myoutimg = nameprefix+'-dirty-img'
+	else:
+		myoutimg = nameprefix+'-selfcal'+'img'+str(srno)
+	default(tclean)
+	if mynterms1 > 1:
+		tclean(vis=myfile,
+       			imagename=myoutimg, selectdata= True, field='0', spw='', imsize=imsize, cell=cell, robust=0, weighting='briggs', 
+       			specmode='mfs',	nterms=mynterms1, niter=myniter, usemask='auto-multithresh',minbeamfrac=0.1, sidelobethreshold = 1.5,
+#			minpsffraction=0.05,
+#			maxpsffraction=0.8,
+			smallscalebias=0.6, threshold= mythresh, aterm =True, pblimit=-1,
+	        	deconvolver='mtmfs', gridder='wproject', wprojplanes=mywproj, scales=[0,5,15],wbawp=False,
+			restoration = True, savemodel='modelcolumn', cyclefactor = 0.5, parallel=False,
+       			interactive=False)
+	else:
+		tclean(vis=myfile,
+       			imagename=myoutimg, selectdata= True, field='0', spw='', imsize=imsize, cell=cell, robust=0, weighting='briggs', 
+       			specmode='mfs',	nterms=mynterms1, niter=myniter, usemask='auto-multithresh',minbeamfrac=0.1,sidelobethreshold = 1.5,
+#			minpsffraction=0.05,
+#			maxpsffraction=0.8,
+			smallscalebias=0.6, threshold= mythresh, aterm =True, pblimit=-1,
+	        	deconvolver='multiscale', gridder='wproject', wprojplanes=mywproj, scales=[0,5,15],wbawp=False,
+			restoration = True, savemodel='modelcolumn', cyclefactor = 0.5, parallel=False,
+       			interactive=False)
+	return myoutimg
+
+
 def myonlyclean(myfile,myniter,mythresh,srno,cell,imsize,mynterms1,mywproj):
 	default(clean)
 	clean(vis=myfile,
@@ -389,6 +420,13 @@ def mysplit(myfile,srno):
 	filname_pre = getfields(myfile)[0]
 	default(mstransform)
 	mstransform(vis=myfile, field='0', spw='0', datacolumn='corrected', outputvis=filname_pre+'-selfcal'+str(srno)+'.ms')
+	myoutvis=filname_pre+'-selfcal'+str(srno)+'.ms'
+	return myoutvis
+
+def mysbsplit(myfile,srno):
+	filname_pre = getfields(myfile)[0]
+	default(mstransform)
+	mstransform(vis=myfile, field='0', spw='', datacolumn='corrected', outputvis=filname_pre+'-selfcal'+str(srno)+'.ms')
 	myoutvis=filname_pre+'-selfcal'+str(srno)+'.ms'
 	return myoutvis
 
@@ -423,15 +461,15 @@ def mysbgaincal_ap(myfile,xgt,myref,mygtable,srno,pap,mysolint,myuvrascal,mygain
 		mycalmode='p'
 		mysol= mysolint[srno] 
 		mysolnorm = False
-	if os.path.isdir(fprefix+str(pap)+str(srno)+str(xgt)+'.GT'):
-		os.system('rm -rf '+str(pap)+str(srno)+str(xgt)+'.GT')
+	if os.path.isdir(fprefix+str(pap)+str(srno)+str('sb')+str(xgt)+'.GT'):
+		os.system('rm -rf '+str(pap)+str(srno)+str('sb')+str(xgt)+'.GT')
 	default(gaincal)
-	gaincal(vis=myfile, caltable=fprefix+str(pap)+str(srno)+str(xgt)+'.GT', append=False, field='0', spw=str(xgt),
+	gaincal(vis=myfile, caltable=fprefix+str(pap)+str(srno)+str('sb')+str(xgt)+'.GT', append=False, field='0', spw=str(xgt),
 		uvrange=myuvrascal, solint = mysol, refant = myref, minsnr = 2.0,solmode='L1R', gaintype = 'G',
 		solnorm= mysolnorm, calmode = mycalmode, gaintable = [], interp = ['nearest,nearestflag', 'nearest,nearestflag' ], 
 		parang = True )
 		
-	mycal = str(pap)+str(srno)+str(xgt)+'.GT'
+	mycal = fprefix+str(pap)+str(srno)+str('sb')+str(xgt)+'.GT'
 	return mycal
 
 
@@ -445,7 +483,7 @@ def myapplycal(myfile,mygaintables):
 
 def mysbapplycal(myfile,mygaintables,xgt):
 	default(applycal)
-	applycal(vis=myfile, field='0',,spw=str(xgt), gaintable=mygaintables, gainfield=['0'], applymode='calflag', 
+	applycal(vis=myfile, field='0',spw=str(xgt), gaintable=mygaintables, gainfield=['0'], applymode='calflag', 
 	         interp=['linear'], calwt=False, parang=False)
 	print('Ran applycal.')
 	
@@ -675,7 +713,7 @@ def mysubbandselfcal(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesiz
 					if usetclean == False:
 						myimg = myonlyclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # clean
 					else:
-						myimg = mytclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # tclean
+						myimg = mysbtclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # tclean
 					if mynterms2 > 1:
 						exportfits(imagename=myimg+'.image.tt0', fitsimage=myimg+'.fits')
 					else:
@@ -695,7 +733,7 @@ def mysubbandselfcal(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesiz
 
 					if i < nscal+1:
 
-						myoutfile= mysplit(myfile[i],i)
+						myoutfile= mysbsplit(myfile[i],i)
 						myfile.append(myoutfile)
 
 				else:
@@ -709,7 +747,7 @@ def mysubbandselfcal(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesiz
 					if usetclean == False:
 						myimg = myonlyclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # clean
 					else:
-						myimg = mytclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # tclean
+						myimg = mysbtclean(myfile[i],myniter,mythresh,i,mycellsize,myimagesize,mynterms2,mywproj1)   # tclean
 					if mynterms2 > 1:
 						exportfits(imagename=myimg+'.image.tt0', fitsimage=myimg+'.fits')
 					else:
@@ -719,9 +757,9 @@ def mysubbandselfcal(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesiz
 					if i!= nscal:
 						for xgt in range(0,len(msspw)):	
 							myctables = mysbgaincal_ap(myfile[i],xgt,myref,mygt[i-1],i,mypap,mysolint1,'',mygainspw2)		
-							myapplycal(myfile[i],myctables,xgt,mygainspw2)	
+							mysbapplycal(myfile[i],myctables,xgt)	
 						if i < nscal+1:
-							myoutfile= mysplit(myfile[i],i)
+							myoutfile= mysbsplit(myfile[i],i)
 							myfile.append(myoutfile)
 
 #				print("Visibilities from the previous selfcal will be deleted.")
