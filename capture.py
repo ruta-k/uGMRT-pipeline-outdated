@@ -692,32 +692,34 @@ if makedirty == True:
         mytclean(myfile2,0,mJythreshold,0,imcellsize,imsize_pix,use_nterms,nwprojpl)
 
 if doselfcal == True:
-        try:
-                assert os.path.isdir(splitavgfilename), "doselfcal = True but the splitavg file not found."
-        except AssertionError:
-                logging.info("doselfcal = True but the splitavg file not found.")
-                sys.exit()
-	casalog.filter('INFO')
-	logging.info("A flagging summary is provided for the MS file.")
-	flagsummary(splitavgfilename)
-	clearcal(vis = splitavgfilename)
-	myfile2 = [splitavgfilename]
-	if usetclean == True:
-		myselfcal(myfile2,ref_ant,scaloops,pcaloops,mJythreshold,imcellsize,imsize_pix,use_nterms,nwprojpl,scalsolints,clipresid,'','',False,niter_start)
-		
-if dosubbandselfcal == True:
-        try:
-                assert os.path.isdir(splitavgfilename), "dosubbandselfcal = True but the splitavg file not found."
-        except AssertionError:
-                logging.info("dosubbandselfcal = True but the splitavg file not found.")
-                sys.exit()
-	casalog.filter('INFO')
-	logging.info("A flagging summary is provided for the MS file.")
-	flagsummary(splitavgfilename)
-	clearcal(vis = splitavgfilename)
-	myfile2 = [splitavgfilename]
-	if usetclean == True:
-		mysubbandselfcal(myfile2,ref_ant,scaloops,pcaloops,mJythreshold,imcellsize,imsize_pix,use_nterms,nwprojpl,scalsolints,clipresid,'','',False,niter_start)
+	if dosubbandselfcal == True:
+		try:
+		        assert os.path.isdir(splitavgfilename), "dosubbandselfcal = True but the splitavg file not found."
+		except AssertionError:
+		        logging.info("dosubbandselfcal = True but the splitavg file not found.")
+		        sys.exit()
+		casalog.filter('INFO')
+		logging.info("A flagging summary is provided for the MS file.")
+		flagsummary(splitavgfilename)
+		clearcal(vis = splitavgfilename)
+		myfile2 = [splitavgfilename]
+		if usetclean == True:
+			mysubbandselfcal(myfile2,ref_ant,scaloops,pcaloops,mJythreshold,imcellsize,imsize_pix,use_nterms,nwprojpl,scalsolints,clipresid,'','',False,niter_start)
+	else:
+		try:
+		        assert os.path.isdir(splitavgfilename), "doselfcal = True but the splitavg file not found."
+		except AssertionError:
+		        logging.info("doselfcal = True but the splitavg file not found.")
+		        sys.exit()
+		casalog.filter('INFO')
+		logging.info("A flagging summary is provided for the MS file.")
+		flagsummary(splitavgfilename)
+		clearcal(vis = splitavgfilename)
+		myfile2 = [splitavgfilename]
+		if usetclean == True:
+			myselfcal(myfile2,ref_ant,scaloops,pcaloops,mJythreshold,imcellsize,imsize_pix,use_nterms,nwprojpl,scalsolints,clipresid,'','',False,niter_start)
+			
+
 
 
 
