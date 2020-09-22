@@ -637,7 +637,7 @@ def mysubbandselfcal(myfile,subbandchan,myref,nloops,nploops,myvalinit,mycellsiz
 			if mynchani>xchan:
 			    spwi='0:'+str(xs*xchan)+'~'+str(((xs+1)*xchan)-1)
 			    if xs==0:
-				gspwi='0:'+str(100)+'~'+str(((xs+1)*xchan)-1)
+				gspwi='0:'+str(0)+'~'+str(((xs+1)*xchan)-1)
 			    else:
 				gspwi='0:'+str(0)+'~'+str(xchan-1)
 			if mynchani<=xchan:
