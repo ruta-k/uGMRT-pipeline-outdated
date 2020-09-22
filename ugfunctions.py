@@ -61,6 +61,12 @@ def getnchan(msfile):
 	msmd.done()
 	return nchan
 
+def getbw(msfile):
+	msmd.open(msfile)
+	bw = msmd.bandwidths(0)
+	msmd.done()
+	return bw
+
 
 def freq_info(ms_file):									
 	sw = 0
