@@ -72,6 +72,7 @@ clipphasecal =[float(config.get('basic','clipphasecal').split(',')[0]),float(con
 cliptarget =[float(config.get('basic','cliptarget').split(',')[0]),float(config.get('basic','cliptarget').split(',')[1])]   
 clipresid=[float(config.get('basic','clipresid').split(',')[0]),float(config.get('basic','clipresid').split(',')[1])]
 chanavg = config.getint('basic','chanavg')
+subbandchan = config.getint('basic','subbandchan')
 imcellsize = [config.get('basic','imcellsize')]
 imsize_pix = int(config.get('basic','imsize_pix'))
 scaloops = config.getint('basic','scaloops')
@@ -704,7 +705,7 @@ if doselfcal == True:
 		clearcal(vis = splitavgfilename)
 		myfile2 = [splitavgfilename]
 		if usetclean == True:
-			mysubbandselfcal(myfile2,ref_ant,scaloops,pcaloops,mJythreshold,imcellsize,imsize_pix,use_nterms,nwprojpl,scalsolints,clipresid,'','',False,niter_start)
+			mysubbandselfcal(myfile2,subbandchan,ref_ant,scaloops,pcaloops,mJythreshold,imcellsize,imsize_pix,use_nterms,nwprojpl,scalsolints,clipresid,'','',False,niter_start)
 	else:
 		try:
 		        assert os.path.isdir(splitavgfilename), "doselfcal = True but the splitavg file not found."
