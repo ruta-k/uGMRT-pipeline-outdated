@@ -614,7 +614,7 @@ def myselfcal(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesize,mynte
 					os.system('rm -rf '+str(myoldvis))
 #			print('Ran the selfcal loop')
 	return myfile, mygt, myimages
-def mysubbandselfcal(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesize,mynterms2,mywproj1,mysolint1,myclipresid,myflagspw,mygainspw2,mymakedirty,niterstart):
+def mysubbandselfcal(myfile,subbandchan,myref,nloops,nploops,myvalinit,mycellsize,myimagesize,mynterms2,mywproj1,mysolint1,myclipresid,myflagspw,mygainspw2,mymakedirty,niterstart):
 	myref = myref
 	nscal = nloops # number of selfcal loops
 	npal = nploops # number of phasecal loops
@@ -622,7 +622,7 @@ def mysubbandselfcal(myfile,myref,nloops,nploops,myvalinit,mycellsize,myimagesiz
 	splitspw=[]
 	msspw=[]
 	gainsplitspw=[]
-	xchan=100
+	xchan=subbandchan
 	myx=getnchan(myfile[0])
 	if myx>xchan:
 		mynchani=myx
