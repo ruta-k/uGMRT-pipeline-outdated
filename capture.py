@@ -700,7 +700,7 @@ if doselfcal == True:
 		        logging.info("dosubbandselfcal = True but the splitavg file not found.")
 		        sys.exit()
 		bw=getbw(splitavgfilename)
-		if bw<32E06:
+		if bw<=32E06:
 			raise Exception("GSB files cannot be subbanded. Make dosubbandselfcal False")
 		casalog.filter('INFO')
 		logging.info("A flagging summary is provided for the MS file.")
