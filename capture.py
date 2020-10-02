@@ -43,7 +43,7 @@ casalog.setlogfile(CASA_logfile)
 try:
     import ConfigParser
     config = ConfigParser.ConfigParser()
-except ImportError:
+except ModuleNotFoundError:
     import configparser
     config = configparser.ConfigParser()
 
