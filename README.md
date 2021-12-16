@@ -1,5 +1,6 @@
-# The repository CAPTURE is the new avatar of uGMRT-pipeline that will be maintained further: https://github.com/ruta-k/CAPTURE
 # uGMRT-pipeline (This is outdated and will not be maintained further.)
+
+# The repository CAPTURE-CASA6 is the new avatar of uGMRT-pipeline that will be maintained further: https://github.com/ruta-k/CAPTURE-CASA6
 
 CAPTURE: A CAsa Pipeline-cum-Toolkit for Upgraded Giant Metrewave Radio Telescope data REduction
 uGMRT-pipeline
